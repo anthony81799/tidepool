@@ -140,4 +140,8 @@
 
 ## Progress
 - Current phase: **0: Workspace and tooling**
-- Open checks: Fire OS version on the Insignia F50 (7 or 8), Jellyfin server version, Intro Skipper and OpenSubtitles plugin compatibility, CBR decoder choice
+  - Done: git repo; toolchains pinned (`mise.toml`, `rust-toolchain.toml` with Android targets, pnpm via `packageManager`); dev Jellyfin running in Podman (`docs/podman-run.txt`), setup wizard complete.
+  - Next: monorepo skeleton, then `justfile` + pre-commit + VSCodium workspace, then sample library, plugins, trickplay, and the restricted user.
+- Dev server: **Jellyfin 10.11.11** (image tag `10.11`). OpenAPI spec at `/api-docs/openapi.json`, Swagger UI at `/api-docs/swagger/index.html`.
+  - Use `http://127.0.0.1:8096`: `localhost` resolves to `::1` and the connection is reset (cause unconfirmed).
+- Open checks: Fire OS version on the Insignia F50 (7 or 8), Intro Skipper and OpenSubtitles plugin compatibility with 10.11.11, CBR decoder choice
