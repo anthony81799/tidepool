@@ -1,0 +1,13 @@
+{
+  "name": "jellyfin-app",
+  "private":true,
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": "12.16.1",
+      "onFail": "download"
+    }
+  },
+  "packageManager": "pnpm@12.16.1",
+  "type": "module"
+}
