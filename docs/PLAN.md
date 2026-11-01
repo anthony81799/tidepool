@@ -142,8 +142,8 @@
 - Current phase: **0: Workspace and tooling**
   - Done: git repo; toolchains pinned (`mise.toml`, `rust-toolchain.toml` with Android targets, pnpm via `packageManager`); dev Jellyfin running in Podman (`docs/podman-run.txt`), setup wizard complete.
   - Done (2026-11-01): pnpm workspace; `apps/web` (Vite react-ts, TS 7) builds; `packages/core` linked via `workspace:*` and imported by web; oxlint at the root with React rules scoped to `apps/web/**`.
-  - Done (2026-11-01): `packages/core` standalone type-check (`pnpm -F @tidepool/core typecheck`); project named Tidepool, remote `github.com/anthony81799/tidepool` (public, GPL-3.0, default branch `main`); `services/companion` Go module (`github.com/anthony81799/tidepool/services/companion`, Go 1.27.3) builds and vets clean, with the binary ignored at `/services/companion/companion`.
-  - Next: `workers/` (`uv init --package --no-pin-python`); then `justfile` + pre-commit + VSCodium workspace, then sample library, plugins, trickplay, and the restricted user. `apps/tauri` can wait for Phase 7.
+  - Done (2026-11-01): `packages/core` standalone type-check (`pnpm -F @tidepool/core typecheck`); project named Tidepool, remote `github.com/anthony81799/tidepool` (public, GPL-3.0, default branch `main`); `services/companion` Go module (`github.com/anthony81799/tidepool/services/companion`, Go 1.27.3) builds and vets clean, with the binary ignored at `/services/companion/companion`; `workers/` uv package (`src/` layout, `uv run workers` works, `__pycache__/` ignored).
+  - Next: `justfile` + pre-commit + VSCodium workspace, then sample library, plugins, trickplay, and the restricted user. `apps/tauri` can wait for Phase 7.
 - Dev server: **Jellyfin 10.11.11** (image tag `10.11`). OpenAPI spec at `/api-docs/openapi.json`, Swagger UI at `/api-docs/swagger/index.html`.
   - Use `http://127.0.0.1:8096`: `localhost` resolves to `::1` and the connection is reset (cause unconfirmed).
 - Open checks: Fire OS version on the Insignia F50 (7 or 8), Intro Skipper and OpenSubtitles plugin compatibility with 10.11.11, CBR decoder choice

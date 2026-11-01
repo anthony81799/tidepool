@@ -2,3 +2,4 @@ dev/media
 node_modules/
 dist/
 /services/companion/companion
+__pycache__/
