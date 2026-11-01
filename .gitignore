@@ -1,3 +1,4 @@
 dev/media
 node_modules/
 dist/
+/services/companion/companion

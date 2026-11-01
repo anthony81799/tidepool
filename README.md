@@ -62,7 +62,7 @@ Tidepool is an unofficial, independent client. It is not affiliated with or endo
 | `apps/web` | TypeScript | React + Vite UI |
 | `packages/core` | TypeScript | Shared domain model and API layer |
 | `apps/tauri` | Rust | Tauri 2 shell and native plugins *(planned)* |
-| `services/companion` | Go | Companion service *(planned)* |
+| `services/companion` | Go | Companion service *(skeleton)* |
 | `workers/` | Python | Background workers, managed with `uv` *(planned)* |
 | `docs/` | | Plan and dev notes |
 | `dev/media` | | Local sample library for the dev server (git-ignored) |
