@@ -1,0 +1,12 @@
+podman run \
+   --detach \
+   --replace \
+   --name jellyfin-dev \
+   --publish 8096:8096/tcp \
+   --publish 7359:7359/udp \
+   --rm \
+   --userns keep-id \
+   --volume jellyfin-cache:/cache:Z \
+   --volume jellyfin-config:/config:Z \
+   --volume $PWD/dev/media:/media:ro,Z \
+   docker.io/jellyfin/jellyfin:10.11
