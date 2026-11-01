@@ -1,5 +1,5 @@
 {
-  "name": "jellyfin-app",
+  "name": "tidepool",
   "private": true,
   "devEngines": {
     "packageManager": {

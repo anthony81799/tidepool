@@ -172,7 +172,7 @@ importers:
 
   apps/web:
     dependencies:
-      '@jellyfin-app/core':
+      '@tidepool/core':
         specifier: workspace:*
         version: link:../../packages/core
       react:

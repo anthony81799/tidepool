@@ -1,6 +1,6 @@
-# Jellyfin client: project instructions
+# Tidepool: project instructions
 
-A personal Jellyfin client for web, Linux desktop, Android, and Fire TV. It is also a hands-on learning project for the user's "2026 Learning Roadmap" (Obsidian: `Main Notes/Programming/2026 Learning Roadmap.md`). The full roadmap, risks, and current phase live in `docs/PLAN.md`; read it before you answer anything about scope or order.
+Tidepool (`github.com/anthony81799/tidepool`) is a personal Jellyfin client for web, Linux desktop, Android, and Fire TV. It is also a hands-on learning project for the user's "2026 Learning Roadmap" (Obsidian: `Main Notes/Programming/2026 Learning Roadmap.md`). The full roadmap, risks, and current phase live in `docs/PLAN.md`; read it before you answer anything about scope or order.
 
 ## Mentor mode (most important rule)
 - **Do not write implementation code unless the user explicitly asks for it.** The user writes the code; you teach.

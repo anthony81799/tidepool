@@ -1,7 +1,7 @@
 # Jellyfin client: build plan
 
 ## Context
-`/home/amason/Projects/jellyfin-app` is empty. The goal is a custom Jellyfin client for web, Linux desktop, Android, and Fire TV. It doubles as a hands-on project for the "2026 Learning Roadmap" (Obsidian: `Main Notes/Programming/2026 Learning Roadmap.md`). Each language gets the job its roadmap phase is about:
+**Tidepool** (`github.com/anthony81799/tidepool`) is a custom Jellyfin client for web, Linux desktop, Android, and Fire TV. It doubles as a hands-on project for the "2026 Learning Roadmap" (Obsidian: `Main Notes/Programming/2026 Learning Roadmap.md`). Each language gets the job its roadmap phase is about:
 
 | Language | Roadmap focus | Job in this app |
 |---|---|---|
@@ -142,7 +142,8 @@
 - Current phase: **0: Workspace and tooling**
   - Done: git repo; toolchains pinned (`mise.toml`, `rust-toolchain.toml` with Android targets, pnpm via `packageManager`); dev Jellyfin running in Podman (`docs/podman-run.txt`), setup wizard complete.
   - Done (2026-11-01): pnpm workspace; `apps/web` (Vite react-ts, TS 7) builds; `packages/core` linked via `workspace:*` and imported by web; oxlint at the root with React rules scoped to `apps/web/**`.
-  - Next: `packages/core/tsconfig.json` + standalone type-check, `services/companion` (`go mod init` + building `main.go`), `workers/` (`uv init --package --no-pin-python`); then `justfile` + pre-commit + VSCodium workspace, then sample library, plugins, trickplay, and the restricted user. `apps/tauri` can wait for Phase 7.
+  - Done (2026-11-01): `packages/core` standalone type-check (`pnpm -F @tidepool/core typecheck`); project named Tidepool, remote `github.com/anthony81799/tidepool`.
+  - Next: `services/companion` (`go mod init github.com/anthony81799/tidepool/services/companion` + building `main.go`), `workers/` (`uv init --package --no-pin-python`); then `justfile` + pre-commit + VSCodium workspace, then sample library, plugins, trickplay, and the restricted user. `apps/tauri` can wait for Phase 7.
 - Dev server: **Jellyfin 10.11.11** (image tag `10.11`). OpenAPI spec at `/api-docs/openapi.json`, Swagger UI at `/api-docs/swagger/index.html`.
   - Use `http://127.0.0.1:8096`: `localhost` resolves to `::1` and the connection is reset (cause unconfirmed).
 - Open checks: Fire OS version on the Insignia F50 (7 or 8), Intro Skipper and OpenSubtitles plugin compatibility with 10.11.11, CBR decoder choice

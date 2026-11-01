@@ -1,9 +1,12 @@
 {
-  "name": "@jellyfin-app/core",
+  "name": "@tidepool/core",
   "private": true,
   "type": "module",
   "exports": "./src/index.ts",
   "devDependencies": {
     "typescript": "^7.0.2"
+  },
+  "scripts": {
+    "typecheck": "tsc"
   }
 }

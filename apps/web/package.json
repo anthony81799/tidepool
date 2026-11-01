@@ -9,7 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@jellyfin-app/core": "workspace:*",
+    "@tidepool/core": "workspace:*",
     "react": "^19.3.1",
     "react-dom": "^19.3.1"
   },
