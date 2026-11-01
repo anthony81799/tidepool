@@ -33,7 +33,7 @@
 **Phase 0: Workspace and tooling**
 - Run `git init` and create a monorepo: `apps/web` (TS), `apps/tauri` (Rust shell), `services/companion` (Go), `workers/` (Python), `packages/core` (shared TS domain + API layer), `docs/`.
 - Pin toolchains with `mise`: Node LTS + pnpm, Rust stable + Android targets, Go, Python + uv.
-- VSCodium: create a multi-root `.code-workspace` with one root per language. Install these extensions from Open VSX: rust-analyzer, Go, Python + Ruff, ESLint, Prettier, Tauri, Even Better TOML, EditorConfig.
+- VSCodium: create a multi-root `.code-workspace` with one root per language. Install these extensions from Open VSX: rust-analyzer, Go, Python + Ruff, Oxc (oxlint), Prettier, Tauri, Even Better TOML, EditorConfig.
 - Add one task runner (`just`) with `dev`, `test`, and `lint` targets per package. Add pre-commit hooks for formatting.
 - Run a **dev Jellyfin server in Podman** with a small sample library: a TV episode with ASS subtitles, a movie, an album with lyrics, an EPUB, a PDF, an AZW3, a CBZ and a CBR, and an audiobook with chapters. Enable trickplay. Install the Intro Skipper and OpenSubtitles plugins. Create a second, parental-restricted user.
 - Done when: `just dev` starts the empty web app and the Jellyfin container comes up.
