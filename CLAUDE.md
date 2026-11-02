@@ -49,7 +49,13 @@ Planned layout (update as packages are created):
 - `docs/PLAN.md`: phases, risks, feature list, current phase
 
 ## Commands
-Not yet created. Phase 0 adds a `justfile` with `dev`, `test`, and `lint` targets; list them here when they exist. Toolchains are pinned with `mise`. The dev Jellyfin server runs in Podman.
+Root `justfile`:
+- `just dev`: starts the Jellyfin container (`just jellyfin`, uses `--replace` so it restarts), then Vite at `http://localhost:5173`
+- `just lint`: oxlint, `go vet`, `ruff format --check`, `ruff check`
+- `just test`: web build, core typecheck, `go test`, pytest
+- `just --fmt --check`: justfile formatting
+
+Toolchains are pinned with `mise`. The dev Jellyfin server runs in Podman.
 
 ## Environment
 - Editor: VSCodium (extensions come from Open VSX, not the Microsoft marketplace).
