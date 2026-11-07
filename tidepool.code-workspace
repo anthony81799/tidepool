@@ -1,0 +1,35 @@
+{
+  "folders": [
+    { "path": "." },
+    { "path": "apps/web" },
+    { "path": "packages/core" },
+    { "path": "services/companion" },
+    { "path": "workers" },
+  ],
+  "settings": {
+    "editor.formatOnSave": true,
+    "[typescript]": { "editor.defaultFormatter": "oxc.oxc-vscode" },
+    "[typescriptreact]": { "editor.defaultFormatter": "oxc.oxc-vscode" },
+    "[javascript]": { "editor.defaultFormatter": "oxc.oxc-vscode" },
+    "[json]": { "editor.defaultFormatter": "oxc.oxc-vscode" },
+    "[jsonc]": { "editor.defaultFormatter": "oxc.oxc-vscode" },
+    "[css]": { "editor.defaultFormatter": "oxc.oxc-vscode" },
+    "[yaml]": { "editor.defaultFormatter": "oxc.oxc-vscode" },
+    "[toml]": { "editor.defaultFormatter": "oxc.oxc-vscode" },
+    "[markdown]": { "editor.defaultFormatter": "oxc.oxc-vscode" },
+    "[go]": { "editor.defaultFormatter": "golang.go" },
+    "[python]": { "editor.defaultFormatter": "charliermarsh.ruff" },
+    "[rust]": { "editor.defaultFormatter": "rust-lang.rust-analyzer" },
+  },
+  "extensions": {
+    "recommendations": [
+      "oxc.oxc-vscode",
+      "golang.go",
+      "charliermarsh.ruff",
+      "rust-lang.rust-analyzer",
+      "ms-python.python",
+      "tauri-apps.tauri-vscode",
+      "tamasfe.even-better-toml",
+    ],
+  },
+}
