@@ -18,7 +18,6 @@ dev: jellyfin
 lint:
     pnpm lint
     go -C services/companion vet ./...
-    uv run --directory workers ruff format --check
     uv run --directory workers ruff check
 
 test:
@@ -26,3 +25,18 @@ test:
     pnpm -F @tidepool/core typecheck
     go -C services/companion test ./...
     uv run --directory workers pytest
+
+fmt-check-go:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    files=$(gofmt -l ./services/companion/)
+    if [[ -n "$files" ]]; then
+        echo "Unformatted files:" >&2
+        echo "$files" >&2
+        exit 1
+    fi
+
+fmt-check: fmt-check-go
+    just --fmt --check
+    pnpm fmt --check
+    uv run --directory workers ruff format --check
