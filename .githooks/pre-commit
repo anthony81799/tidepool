@@ -1,0 +1,18 @@
+#!/bin/sh
+set -e
+
+PRESTASH_REF=$(git rev-parse -q --verify refs/stash) || true
+# Stash unstaged changes (keeps staged changes in the working tree)
+git stash push -q --keep-index --include-untracked
+POSTSTASH_REF=$(git rev-parse -q --verify refs/stash) || true
+
+restore() {
+    # Restore unstaged changes only if we actually stashed something
+    if [ "$PRESTASH_REF" != "$POSTSTASH_REF" ]; then
+        git reset --hard -q
+        git stash pop --quiet --index
+    fi
+}
+trap restore EXIT
+
+just fmt-check

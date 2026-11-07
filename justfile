@@ -40,3 +40,6 @@ fmt-check: fmt-check-go
     just --fmt --check
     pnpm fmt --check
     uv run --directory workers ruff format --check
+
+setup:
+    git config core.hooksPath .githooks
