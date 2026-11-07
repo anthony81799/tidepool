@@ -15,18 +15,18 @@ Tidepool is an unofficial, independent client. It is not affiliated with or endo
 
 ## Planned features
 
-| Area | Features |
-|---|---|
-| Accounts | Multiple servers and users, fast switching, Quick Connect, parental controls enforced by the server |
-| Browse | Library browsing, item detail pages, artwork, search across all media types |
-| Video | Direct play or HLS transcoding, ASS subtitles (JASSUB), trickplay thumbnails, audio/subtitle/quality selection, playback speed, subtitle styling, external subtitle search, skip intro/outro, auto-play next episode |
-| Music | Persistent editable queue, playlists, play-all and shuffle by artist, synced lyrics, sleep timer, OS media keys |
-| Books and comics | EPUB, MOBI, AZW3, FB2, CBZ (foliate-js), PDF (pdf.js), CBR, exact-position resume, reader themes and layouts, manga right-to-left |
-| Audiobooks | Chapters, chapter skip, ±30 s jumps, speed control, resume |
-| User state | Mark watched/read/played, favorites, home rows (Continue Watching, Next Up, Recently Added, Continue Reading, Continue Listening) |
-| Desktop and mobile | OS keyring token storage, MPRIS and Android media notifications, offline downloads with offline progress sync |
-| TV | 10-foot UI, D-pad focus navigation, remote control keys |
-| Social | SyncPlay (watch together), compatible with official Jellyfin clients |
+| Area               | Features                                                                                                                                                                                                             |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Accounts           | Multiple servers and users, fast switching, Quick Connect, parental controls enforced by the server                                                                                                                  |
+| Browse             | Library browsing, item detail pages, artwork, search across all media types                                                                                                                                          |
+| Video              | Direct play or HLS transcoding, ASS subtitles (JASSUB), trickplay thumbnails, audio/subtitle/quality selection, playback speed, subtitle styling, external subtitle search, skip intro/outro, auto-play next episode |
+| Music              | Persistent editable queue, playlists, play-all and shuffle by artist, synced lyrics, sleep timer, OS media keys                                                                                                      |
+| Books and comics   | EPUB, MOBI, AZW3, FB2, CBZ (foliate-js), PDF (pdf.js), CBR, exact-position resume, reader themes and layouts, manga right-to-left                                                                                    |
+| Audiobooks         | Chapters, chapter skip, ±30 s jumps, speed control, resume                                                                                                                                                           |
+| User state         | Mark watched/read/played, favorites, home rows (Continue Watching, Next Up, Recently Added, Continue Reading, Continue Listening)                                                                                    |
+| Desktop and mobile | OS keyring token storage, MPRIS and Android media notifications, offline downloads with offline progress sync                                                                                                        |
+| TV                 | 10-foot UI, D-pad focus navigation, remote control keys                                                                                                                                                              |
+| Social             | SyncPlay (watch together), compatible with official Jellyfin clients                                                                                                                                                 |
 
 ## Architecture
 
@@ -57,15 +57,15 @@ Tidepool is an unofficial, independent client. It is not affiliated with or endo
 
 ## Repository layout
 
-| Path | Language | Contents |
-|---|---|---|
-| `apps/web` | TypeScript | React + Vite UI |
-| `packages/core` | TypeScript | Shared domain model and API layer |
-| `apps/tauri` | Rust | Tauri 2 shell and native plugins *(planned)* |
-| `services/companion` | Go | Companion service *(skeleton)* |
-| `workers/` | Python | Background workers, managed with `uv` *(skeleton)* |
-| `docs/` | | Plan and dev notes |
-| `dev/media` | | Local sample library for the dev server (git-ignored) |
+| Path                 | Language   | Contents                                              |
+| -------------------- | ---------- | ----------------------------------------------------- |
+| `apps/web`           | TypeScript | React + Vite UI                                       |
+| `packages/core`      | TypeScript | Shared domain model and API layer                     |
+| `apps/tauri`         | Rust       | Tauri 2 shell and native plugins _(planned)_          |
+| `services/companion` | Go         | Companion service _(skeleton)_                        |
+| `workers/`           | Python     | Background workers, managed with `uv` _(skeleton)_    |
+| `docs/`              |            | Plan and dev notes                                    |
+| `dev/media`          |            | Local sample library for the dev server (git-ignored) |
 
 ## Development
 

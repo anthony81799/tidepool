@@ -3,10 +3,10 @@
   "private": true,
   "type": "module",
   "exports": "./src/index.ts",
-  "devDependencies": {
-    "typescript": "^7.0.2"
-  },
   "scripts": {
     "typecheck": "tsc"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2"
   }
 }

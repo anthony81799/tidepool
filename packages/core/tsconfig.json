@@ -2,7 +2,7 @@
   "include": ["src"],
   "compilerOptions": {
     "module": "esnext",
-    "moduleResolution":"bundler",
+    "moduleResolution": "bundler",
     "target": "es2023",
     "types": [],
     "lib": ["ES2023"],
