@@ -10,7 +10,7 @@ jellyfin:
           --volume jellyfin-cache:/cache:Z \
           --volume jellyfin-config:/config:Z \
           --volume {{ justfile_directory() }}/dev/media:/media:ro,Z \
-          docker.io/jellyfin/jellyfin:10.11
+          docker.io/jellyfin/jellyfin:12.4
 
 dev: jellyfin
     pnpm -F web dev

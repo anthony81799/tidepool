@@ -21,6 +21,7 @@
 - Music: a queue/player service in TypeScript. "Play artist" pulls all of the artist's tracks, then shuffles them or orders them by album.
 - Go companion: SQLite storage. Auth passthrough: it validates the caller's Jellyfin token against the server, so it never stores passwords.
 - Python: managed with `uv`. Workers pull jobs from the Go companion over HTTP (or gRPC once you reach roadmap Go Project 2).
+- Server support: **Jellyfin 12.x** only (it runs the real library). 10.11 and older are out of scope.
 
 ## Blockers / risks (read before starting)
 
@@ -28,11 +29,13 @@
 2. **Fire TV target: Insignia 43" F50 Series 4K Fire TV.** It runs Fire OS (Android-based), not Vega OS, so a Tauri Android APK can be sideloaded. Check the exact version under Settings → My Fire TV → About: Fire OS 7 is based on Android 9, Fire OS 8 on Android 11. That version sets the minimum Android version and the WebView features you can rely on.
 3. **Android/Fire TV WebView playback.** MSE/HLS works, but direct-play codec support varies by device, so the device profile must lean on server transcoding. Fallback: a Tauri plugin that bridges to Media3/ExoPlayer. That plugin needs Kotlin, which is outside the four languages.
 4. **Skip intro needs segment data.** Native-first: install the Intro Skipper plugin on the server. The Python detector is the learning track and an optional fallback.
-5. Verify every endpoint against **your server's** OpenAPI spec (`/api-docs`), not against tutorials. Endpoints have moved between 10.8, 10.9, 10.10, and 10.11.
+5. Verify every endpoint against **your 12.x server's** OpenAPI spec (`/api-docs`), not against tutorials. Endpoints have moved between 10.8, 10.9, 10.10, 10.11, and 12.0.
+6. **12.0 client breaks** (release notes): `/emby/` and `/mediabrowser/` prefixes removed; legacy authorization off by default (use the `Authorization` header); `GET /QuickConnect/Initiate` removed (use POST); the same `GetItems` query can return different results than on 10.11; `GetArtists`/`GetAlbumArtists` obsolete; version strings no longer start with `10.`.
+7. **SDK version:** use `@jellyfin/sdk` 1.0.x, which its README maps to Jellyfin 12.x.
 
 ## Phased plan (each phase ends with something that runs)
 
-**Phase 0: Workspace and tooling**
+### Phase 0: Workspace and tooling
 
 - Run `git init` and create a monorepo: `apps/web` (TS), `apps/tauri` (Rust shell), `services/companion` (Go), `workers/` (Python), `packages/core` (shared TS domain + API layer), `docs/`.
 - Pin toolchains with `mise`: Node LTS + pnpm, Rust stable + Android targets, Go, Python + uv.
@@ -41,7 +44,7 @@
 - Run a **dev Jellyfin server in Podman** with a small sample library: a TV episode with ASS subtitles, a movie, an album with lyrics, an EPUB, a PDF, an AZW3, a CBZ and a CBR, and an audiobook with chapters. Enable trickplay. Install the Intro Skipper and OpenSubtitles plugins. Create a second, parental-restricted user.
 - Done when: `just dev` starts the empty web app and the Jellyfin container comes up.
 
-**Phase 1: TS core (web)**
+### Phase 1: TS core (web)
 
 - Server discovery or manual URL entry, login with **Quick Connect** or username/password, and token persistence.
 - **Multiple servers and users:** a saved-server list, a user picker, and fast switching that keeps a separate session per server and user.
@@ -51,7 +54,7 @@
 - **Parental controls:** the server enforces them. The client must never cache or show items across users, and must handle "not allowed" responses cleanly.
 - Done when: you can log in to two servers as two users, browse every library, search, and see artwork, and the restricted user can't see restricted items.
 
-**Phase 2: Video playback**
+### Phase 2: Video playback
 
 - Device profile, then the playback-info request, then a direct-play or HLS decision.
 - Seeking, audio/subtitle track selection, ASS rendering through JASSUB, trickplay hover thumbnails.
@@ -62,7 +65,7 @@
 - **Auto-play the next episode** with an "Up next" countdown. **Skip credits** jumps straight to the next episode.
 - Done when: an episode with ASS subtitles plays, resumes where you stopped, offers skip intro, and skipping credits starts the next episode.
 
-**Phase 3: Music**
+### Phase 3: Music
 
 - Persistent queue, gapless playback where possible, playlists (view and edit), play-all and shuffle for an artist, album view.
 - **Queue editing:** reorder, remove, play next, add to end, and clear.
@@ -71,7 +74,7 @@
 - Media Session API for OS media keys.
 - Done when: you can play an artist end to end, edit the queue, follow synced lyrics, and the queue survives a page reload.
 
-**Phase 4: Go companion (roadmap Go Phase 1)**
+### Phase 4: Go companion (roadmap Go Phase 1)
 
 - HTTP service with token-passthrough middleware, SQLite, and a reading-position API.
 - An aggregated "home" endpoint that fans out to Jellyfin with goroutines: continue watching, next up, recently added, and continue reading.
@@ -79,7 +82,7 @@
 - A job queue that Python workers pull from (the Distributed Task Queue concepts).
 - Done when: the web app's home screen loads from the companion and falls back to direct Jellyfin calls when the companion is down.
 
-**Phase 5: Books, comics, audiobooks**
+### Phase 5: Books, comics, audiobooks
 
 - foliate-js reader for EPUB, MOBI, and AZW3; pdf.js for PDF; cover art.
 - Reader settings: font, size, theme, and paged vs. scroll mode.
@@ -88,13 +91,13 @@
 - Positions saved to the companion and percentage mirrored to Jellyfin.
 - Done when: you can open each book and comic format and it reopens at the exact spot, and an audiobook resumes mid-chapter.
 
-**Phase 6: Cross-cutting user state**
+### Phase 6: Cross-cutting user state
 
 - Mark watched/read/played, favorite, and unmark on every item type, from both list and detail views.
 - **Home rows:** Continue Watching, Next Up, Recently Added (per library), Continue Reading, Continue Listening, and Favorites.
 - Done when: state set on web shows up in the official Jellyfin app, and the home rows update right after it changes.
 
-**Phase 7: Tauri desktop (roadmap Rust Phase 2)**
+### Phase 7: Tauri desktop (roadmap Rust Phase 2)
 
 - Wrap the web app in Tauri 2. Write Rust plugins for OS keyring token storage, MPRIS media controls, and an offline download manager (concurrent downloads, resume, checksums).
 - **Offline downloads** for video (at a chosen transcode quality), music (albums and playlists), books, comics and audiobooks. Show storage used and allow deleting downloads.
@@ -102,12 +105,12 @@
 - Package as Flatpak or AppImage.
 - Done when: the desktop build plays video and music, downloaded items play with the network off, and progress made offline appears on the server after reconnecting.
 
-**Phase 8: Android**
+### Phase 8: Android
 
 - Tauri Android build, a touch-friendly responsive layout, a background-audio notification, and downloads.
 - Done when: a signed APK installs on your phone and music keeps playing with the screen locked.
 
-**Phase 9: Fire TV**
+### Phase 9: Fire TV
 
 - Target device: Insignia 43" F50 (Fire OS). Enable Developer Options and ADB debugging on the TV, then sideload over ADB on your LAN.
 - Leanback launcher entry, a 10-foot UI, D-pad spatial focus navigation (a focus-management layer in TS), and remote play/pause/seek keys.
@@ -115,20 +118,20 @@
 - Device profile tuned to what the TV actually reports. The panel is 4K, but test HEVC, HDR, and the audio codecs before allowing direct play.
 - Done when: the remote alone can browse, play, seek, and skip intro.
 
-**Phase 10: Python workers (roadmap Python Phase 4)**
+### Phase 10: Python workers (roadmap Python Phase 4)
 
 - Intro/outro detector using audio fingerprinting across the episodes of a season. Results are posted as segments to the companion and used only when the server has no segments for that item.
 - A stats/recommendations worker that produces a "Wrapped"-style summary.
 - A dev seeding script for the test server.
 - Done when: an episode without server segments still shows skip intro.
 
-**Phase 11: SyncPlay (watch together)**
+### Phase 11: SyncPlay (watch together)
 
 - Join or create SyncPlay groups through the Jellyfin API. Listen to the server's WebSocket for group commands, and keep play, pause, and seek in sync with drift correction.
 - Must work with the official Jellyfin clients in the same group.
 - Done when: the web app and the official Android or web client stay in sync through pause, seek, and buffering.
 
-**Phase 12: Hardening**
+### Phase 12: Hardening
 
 - Tests: unit tests per language, plus Playwright end-to-end tests against the Podman Jellyfin.
 - CI with Forgejo or GitHub Actions.
@@ -156,7 +159,8 @@
 
 ## Progress
 
-- Current phase: **0: Workspace and tooling**
+- Current phase: **1: TS core (web)**. Next: a typed `packages/core` client that logs in with username and password using `@jellyfin/sdk` 1.0.x. `apps/tauri` can wait for Phase 7.
+- Phase 0: **Workspace and tooling** (server setup complete 2026-11-08)
   - Done: git repo; toolchains pinned (`mise.toml`, `rust-toolchain.toml` with Android targets, pnpm via `packageManager`); dev Jellyfin running in Podman (`docs/podman-run.txt`), setup wizard complete.
   - Done (2026-11-01): pnpm workspace; `apps/web` (Vite react-ts, TS 7) builds; `packages/core` linked via `workspace:*` and imported by web; oxlint at the root with React rules scoped to `apps/web/**`.
   - Done (2026-11-01): `packages/core` standalone type-check (`pnpm -F @tidepool/core typecheck`); project named Tidepool, remote `github.com/anthony81799/tidepool` (public, GPL-3.0, default branch `main`); `services/companion` Go module (`github.com/anthony81799/tidepool/services/companion`, Go 1.27.3) builds and vets clean, with the binary ignored at `/services/companion/companion`; `workers/` uv package (`src/` layout, `uv run workers` works, `__pycache__/` ignored).
@@ -164,7 +168,9 @@
   - Done (2026-11-07): oxlint pinned to exactly `1.92.0`; oxfmt `0.77.0` (beta, exact pin, defaults, `.oxfmtrc.json`) formats TS/JSON/CSS/YAML/TOML/Markdown, and the repo is formatted. `just fmt-check` runs `gofmt -l` in a shebang recipe so gofmt errors fail it, plus `just --fmt --check`, `pnpm fmt --check`, and `ruff format --check` (moved out of `lint`).
   - Done (2026-11-07): `.githooks/pre-commit` runs `just fmt-check` on staged content only (`stash push --keep-index --include-untracked`; an EXIT trap runs `reset --hard` + `stash pop --index` only if the hook created a stash). `just setup` sets `core.hooksPath`. Tested: a badly formatted staged file is blocked, and the index, working tree, untracked files, and existing stashes survive in all staging layouts. Format-on-save in the editor can fix files before the hook sees them, so test with edits made outside the editor.
   - Done (2026-11-07): `tidepool.code-workspace` with five roots (`.`, `apps/web`, `packages/core`, `services/companion`, `workers`), format on save, and per-language formatters that match `just fmt-check`: Oxc (local oxfmt) for TS/JS/JSON/CSS/YAML/TOML/Markdown, gofmt via `golang.go`, Ruff, and rust-analyzer. Prettier and EditorConfig were dropped from the plan. Biome is disabled for the workspace (`biome.enabled: false`) because it conflicts with oxc and warns about the overlapping roots.
-  - Next: sample library, plugins, trickplay, and the restricted user. `apps/tauri` can wait for Phase 7.
-- Dev server: **Jellyfin 10.11.11** (image tag `10.11`). OpenAPI spec at `/api-docs/openapi.json`, Swagger UI at `/api-docs/swagger/index.html`.
+  - Done (2026-11-08): dev server moved to Jellyfin 12.4. Sample library in the git-ignored `dev/media`, copied from the real server: 16 items across Shows, Anime, Movies, Music, and Books, plus a CBZ built from the CBR's pages. Intro Skipper and Open Subtitles installed; `restricted` user capped at max rating 13 sees 10 of 16 items. Trickplay is enabled on the video libraries and stored outside the media folder, because `/media` is mounted read-only. Checked through the API and logs, not yet by playing anything in the web UI.
+  - Skip-intro test media: The Irregular at Magic High School S03E11–13 has Intro and Outro segments. Stargate Origins S01E04–06 only has Outro segments.
+- Dev server: **Jellyfin 12.4.0** (image tag `12.4`). OpenAPI spec at `/api-docs/openapi.json`, Swagger UI at `/api-docs/swagger/index.html`.
+- Plugins for 12.x (checked 2026-11-08): Intro Skipper 12.0.6.0 (ABI 12.2) from `https://intro-skipper.org/manifest.json`, and OpenSubtitles 25 (ABI 12.0).
   - Use `http://127.0.0.1:8096`: `localhost` resolves to `::1` and the connection is reset (cause unconfirmed).
-- Open checks: Fire OS version on the Insignia F50 (7 or 8), Intro Skipper and OpenSubtitles plugin compatibility with 10.11.11, CBR decoder choice
+- Open checks: Fire OS version on the Insignia F50 (7 or 8), CBR decoder choice, Open Subtitles account credentials on the dev server

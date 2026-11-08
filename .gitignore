@@ -1,4 +1,6 @@
 dev/media
+dev/.api-key
+dev/.real-api-key
 node_modules/
 dist/
 /services/companion/companion
