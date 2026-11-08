@@ -6,6 +6,10 @@
   "scripts": {
     "typecheck": "tsc"
   },
+  "dependencies": {
+    "@jellyfin/sdk": "^1.0.2",
+    "axios": "^1.21.0"
+  },
   "devDependencies": {
     "typescript": "^7.0.2"
   }

@@ -159,7 +159,10 @@
 
 ## Progress
 
-- Current phase: **1: TS core (web)**. Next: a typed `packages/core` client that logs in with username and password using `@jellyfin/sdk` 1.0.x. `apps/tauri` can wait for Phase 7.
+- Current phase: **1: TS core (web)**. Next: replace the hard-coded `deviceInfo.id` with an interface that each app implements, test whether logging in again with the same device ID revokes the earlier token, then persist the session. `apps/tauri` can wait for Phase 7.
+- Phase 1: **TS core (web)** (started 2026-11-08)
+  - Done (2026-11-08): `@jellyfin/sdk` 1.0.2 and axios added to `packages/core`. `login(url, username, password)` maps `AuthenticationResult` to a domain `Session` (`serverUrl`, `serverId`, `userId`, `userName`, `accessToken`) and throws if a field is missing. It type-checks. A wrong password returns HTTP 401 on 12.4, although the spec only lists 200 and 503.
+  - SDK imports: API helpers aren't reachable from the package entry point, so import them by path (`@jellyfin/sdk/lib/utils/api/authentication-api`). Editor auto-import doesn't find them until one is imported.
 - Phase 0: **Workspace and tooling** (server setup complete 2026-11-08)
   - Done: git repo; toolchains pinned (`mise.toml`, `rust-toolchain.toml` with Android targets, pnpm via `packageManager`); dev Jellyfin running in Podman (`docs/podman-run.txt`), setup wizard complete.
   - Done (2026-11-01): pnpm workspace; `apps/web` (Vite react-ts, TS 7) builds; `packages/core` linked via `workspace:*` and imported by web; oxlint at the root with React rules scoped to `apps/web/**`.
