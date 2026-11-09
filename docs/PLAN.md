@@ -159,9 +159,12 @@
 
 ## Progress
 
-- Current phase: **1: TS core (web)**. Next: replace the hard-coded `deviceInfo.id` with an interface that each app implements, test whether logging in again with the same device ID revokes the earlier token, then persist the session. `apps/tauri` can wait for Phase 7.
+- Current phase: **1: TS core (web)**. Next: persist the `Session` so a reload stays logged in. `apps/tauri` can wait for Phase 7.
 - Phase 1: **TS core (web)** (started 2026-11-08)
   - Done (2026-11-08): `@jellyfin/sdk` 1.0.2 and axios added to `packages/core`. `login(url, username, password)` maps `AuthenticationResult` to a domain `Session` (`serverUrl`, `serverId`, `userId`, `userName`, `accessToken`) and throws if a field is missing. It type-checks. A wrong password returns HTTP 401 on 12.4, although the spec only lists 200 and 503.
+  - Done (2026-11-08): `login` takes an options object with `deviceId` and `deviceName` supplied by the app. Token test on 12.4 with one shared device ID (via `curl`, same login request as the SDK): logging in again as the same user revoked that user's earlier token (401), and another user's token on that device ID stayed valid (200). One device ID per install works for user switching, and the session store must replace a user's token on re-login. Not tested: whether re-login ends another user's live playback session on the same device ID (the source suggests it might), so recheck in Phase 2.
+  - Done (2026-11-08): `login` returns a `LoginResult` discriminated union (`invalid-credentials`, `unreachable`, `server-error`, `invalid-response`) so the UI never sees Axios errors. `apps/web` has a `LoginForm` and `getDeviceId()` (one UUID per browser, in `localStorage`). Checked in the browser: correct login for both users, wrong password, and an unreachable server each show the right result.
+  - Later: a server URL with no `http://` shows a misleading `server-error`. The form still shows raw reason strings and is unstyled.
   - SDK imports: API helpers aren't reachable from the package entry point, so import them by path (`@jellyfin/sdk/lib/utils/api/authentication-api`). Editor auto-import doesn't find them until one is imported.
 - Phase 0: **Workspace and tooling** (server setup complete 2026-11-08)
   - Done: git repo; toolchains pinned (`mise.toml`, `rust-toolchain.toml` with Android targets, pnpm via `packageManager`); dev Jellyfin running in Podman (`docs/podman-run.txt`), setup wizard complete.
