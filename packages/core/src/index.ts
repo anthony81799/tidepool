@@ -1,7 +1,8 @@
-import { Jellyfin } from "@jellyfin/sdk";
+import { type Api, Jellyfin } from "@jellyfin/sdk";
 import { getAuthenticationApi } from "@jellyfin/sdk/lib/utils/api/authentication-api";
 import type { AuthenticationResult } from "@jellyfin/sdk/lib/generated-client";
 import { isAxiosError } from "axios";
+import { getUserApi } from "@jellyfin/sdk/lib/utils/api/user-api";
 
 export type Session = {
   serverUrl: string;
@@ -10,6 +11,8 @@ export type Session = {
   userName: string;
   accessToken: string;
 };
+
+export type SessionStatus = "valid" | "revoked" | "unknown";
 
 type LoginOptions = {
   url: string;
@@ -66,12 +69,7 @@ export async function login({
   deviceId,
   deviceName,
 }: LoginOptions): Promise<LoginResult> {
-  const instanceParams = {
-    clientInfo: { name: "Tidepool", version: "0.1" },
-    deviceInfo: { id: deviceId, name: deviceName },
-  };
-  const jellyfin = new Jellyfin(instanceParams);
-  const api = jellyfin.createApi(url);
+  const api = createApi(url, deviceId, deviceName);
   try {
     const data = (
       await getAuthenticationApi(api).authenticateUserByName({
@@ -81,5 +79,30 @@ export async function login({
     return toSession(url, data);
   } catch (err) {
     return toLoginFailure(err);
+  }
+}
+
+function createApi(url: string, deviceId: string, deviceName: string, accessToken?: string): Api {
+  const instanceParams = {
+    clientInfo: { name: "Tidepool", version: "0.1" },
+    deviceInfo: { id: deviceId, name: deviceName },
+  };
+  const jellyfin = new Jellyfin(instanceParams);
+  return jellyfin.createApi(url, accessToken);
+}
+
+export async function checkSession(
+  session: Session,
+  deviceId: string,
+  deviceName: string,
+): Promise<SessionStatus> {
+  const api = createApi(session.serverUrl, deviceId, deviceName, session.accessToken);
+  try {
+    await getUserApi(api).getCurrentUser();
+    return "valid";
+  } catch (err) {
+    if (!isAxiosError(err)) throw err;
+    if (err.response?.status === 401) return "revoked";
+    return "unknown";
   }
 }
