@@ -29,6 +29,8 @@ export type LoginFailure = {
 
 export type LoginResult = { ok: true; session: Session } | LoginFailure;
 
+type ServerOptions = Omit<LoginOptions, "username" | "password">;
+
 function toLoginFailure(err: unknown): LoginFailure {
   if (!isAxiosError(err)) throw err;
 
@@ -104,5 +106,58 @@ export async function checkSession(
     if (!isAxiosError(err)) throw err;
     if (err.response?.status === 401) return "revoked";
     return "unknown";
+  }
+}
+
+export async function startQuickConnect({
+  url,
+  deviceId,
+  deviceName,
+}: ServerOptions): Promise<{ ok: true; code: string; secret: string } | LoginFailure> {
+  const api = createApi(url, deviceId, deviceName);
+  try {
+    const data = (await getAuthenticationApi(api).initiateQuickConnect()).data;
+    if (!data.Code || !data.Secret) return { ok: false, reason: "invalid-response" };
+    return { ok: true, code: data.Code, secret: data.Secret };
+  } catch (err) {
+    return toLoginFailure(err);
+  }
+}
+
+export async function checkQuickConnect({
+  url,
+  secret,
+  deviceId,
+  deviceName,
+}: ServerOptions & { secret: string }): Promise<"pending" | "approved" | "expired"> {
+  const api = createApi(url, deviceId, deviceName);
+  try {
+    const data = (await getAuthenticationApi(api).getQuickConnectState({ secret })).data;
+    if (!data.Authenticated) return "pending";
+    return "approved";
+  } catch (err) {
+    if (!isAxiosError(err)) throw err;
+    if (!err.response) return "pending";
+    else if (err.response.status === 404) return "expired";
+    return "pending";
+  }
+}
+
+export async function completeQuickConnect({
+  url,
+  secret,
+  deviceId,
+  deviceName,
+}: ServerOptions & { secret: string }): Promise<LoginResult> {
+  const api = createApi(url, deviceId, deviceName);
+  try {
+    const data = (
+      await getAuthenticationApi(api).authenticateWithQuickConnect({
+        quickConnectDto: { Secret: secret },
+      })
+    ).data;
+    return toSession(url, data);
+  } catch (err) {
+    return toLoginFailure(err);
   }
 }
