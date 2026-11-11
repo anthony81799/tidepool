@@ -1,21 +1,39 @@
 import { useEffect, useState } from "react";
 import "./App.css";
 import { LoginForm } from "./LoginForm";
-import { checkSession, type Session } from "@tidepool/core";
-import { clearSession, loadSession, saveSession } from "./session";
+import { checkSession } from "@tidepool/core";
+import {
+  loadSessions,
+  removeSession,
+  saveSessions,
+  sessionKey,
+  upsertSession,
+  type SavedSessions,
+} from "./session";
 import { getDeviceId } from "./device";
 
 function App() {
-  const [session, setSession] = useState<Session | null>(loadSession);
+  const [store, setStore] = useState<SavedSessions>(loadSessions);
+  const active = store.sessions.find((s) => sessionKey(s) === store.active) ?? null;
+
+  function update(next: SavedSessions): void {
+    saveSessions(next);
+    setStore(next);
+  }
+
   useEffect(() => {
     let ignore = false;
     async function verify() {
-      if (!session) return;
-      const status = await checkSession(session, getDeviceId(), "Tidepool Web");
+      if (!active) return;
+      const status = await checkSession(active, getDeviceId(), "Tidepool Web");
       if (!ignore) {
         if (status === "revoked") {
-          clearSession();
-          setSession(null);
+          const key = sessionKey(active);
+          setStore((prev) => {
+            const next = removeSession(prev, key);
+            saveSessions(next);
+            return next;
+          });
         }
       }
     }
@@ -23,30 +41,26 @@ function App() {
     return () => {
       ignore = true;
     };
-  }, [session]);
+  }, [active]);
 
   return (
     <>
-      {session && (
+      {active && (
         <p>
-          Logged in as {session.userName}{" "}
-          <button
-            onClick={() => {
-              clearSession();
-              setSession(null);
-            }}
-          >
-            Log Out
-          </button>
+          Logged in as {active.userName} on {active.serverUrl}{" "}
+          <button onClick={() => update({ ...store, active: null })}>Switch account</button>{" "}
+          <button onClick={() => update(removeSession(store, sessionKey(active)))}>Log Out</button>
         </p>
       )}
-      {!session && (
-        <LoginForm
-          onLogin={(s) => {
-            saveSession(s);
-            setSession(s);
-          }}
-        />
+      {!active && (
+        <>
+          {store.sessions.map((s) => (
+            <button key={sessionKey(s)} onClick={() => update({ ...store, active: sessionKey(s) })}>
+              {s.userName} @ {s.serverUrl}
+            </button>
+          ))}
+          <LoginForm onLogin={(s) => update(upsertSession(store, s))} />
+        </>
       )}
     </>
   );
