@@ -3,6 +3,7 @@ import { getAuthenticationApi } from "@jellyfin/sdk/lib/utils/api/authentication
 import type { AuthenticationResult } from "@jellyfin/sdk/lib/generated-client";
 import { isAxiosError } from "axios";
 import { getUserApi } from "@jellyfin/sdk/lib/utils/api/user-api";
+export * from "./items";
 
 export type Session = {
   serverUrl: string;
