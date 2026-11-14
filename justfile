@@ -43,3 +43,19 @@ fmt-check: fmt-check-go
 
 setup:
     git config core.hooksPath .githooks
+
+timer start=`date +%H:%M`:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    sound=/usr/share/sounds/freedesktop/stereo/alarm-clock-elapsed.oga
+    warn=$(date -d "today {{ start }} 45 minutes" '+%F %T')
+    end=$(date -d "today {{ start }} 60 minutes" '+%F %T')
+    systemctl --user stop tidepool-warn.timer tidepool-end.timer 2>/dev/null || true
+    systemd-run --user --quiet --unit=tidepool-warn --on-calendar="$warn" --timer-property=AccuracySec=1s \
+        sh -c "notify-send -u critical 'Tidepool' '15 minutes left (ends ${end:11:5})'; paplay $sound"
+    systemd-run --user --quiet --unit=tidepool-end --on-calendar="$end" --timer-property=AccuracySec=1s \
+        sh -c "notify-send -u critical 'Tidepool' 'HOUR IS UP'; for i in 1 2 3; do paplay $sound; done"
+    echo "Started {{ start }}. Warning at ${warn:11:5}, alarm at ${end:11:5}."
+
+timer-stop:
+    systemctl --user stop tidepool-warn.timer tidepool-end.timer
