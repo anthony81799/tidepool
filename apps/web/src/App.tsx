@@ -11,6 +11,7 @@ import {
   type SavedSessions,
 } from "./session";
 import { getDeviceId } from "./device";
+import { Libraries } from "./Libraries";
 
 function App() {
   const [store, setStore] = useState<SavedSessions>(loadSessions);
@@ -46,11 +47,16 @@ function App() {
   return (
     <>
       {active && (
-        <p>
-          Logged in as {active.userName} on {active.serverUrl}{" "}
-          <button onClick={() => update({ ...store, active: null })}>Switch account</button>{" "}
-          <button onClick={() => update(removeSession(store, sessionKey(active)))}>Log Out</button>
-        </p>
+        <>
+          <p>
+            Logged in as {active.userName} on {active.serverUrl}{" "}
+            <button onClick={() => update({ ...store, active: null })}>Switch account</button>{" "}
+            <button onClick={() => update(removeSession(store, sessionKey(active)))}>
+              Log Out
+            </button>
+          </p>
+          <Libraries key={sessionKey(active)} session={active} />
+        </>
       )}
       {!active && (
         <>

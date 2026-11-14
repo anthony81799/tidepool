@@ -1,3 +1,12 @@
+.poster-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 1rem;
+}
+.poster-grid img {
+  width: 100%;
+}
+
 .counter {
   font-size: 16px;
   padding: 5px 10px;

@@ -1,19 +1,11 @@
-import { type Api, Jellyfin } from "@jellyfin/sdk";
 import { getAuthenticationApi } from "@jellyfin/sdk/lib/utils/api/authentication-api";
 import type { AuthenticationResult } from "@jellyfin/sdk/lib/generated-client";
 import { isAxiosError } from "axios";
 import { getUserApi } from "@jellyfin/sdk/lib/utils/api/user-api";
+import { createApi, type Session, type SessionStatus } from "./api";
+export type { Session, SessionStatus } from "./api";
 export * from "./items";
-
-export type Session = {
-  serverUrl: string;
-  serverId: string;
-  userId: string;
-  userName: string;
-  accessToken: string;
-};
-
-export type SessionStatus = "valid" | "revoked" | "unknown";
+export * from "./library";
 
 type LoginOptions = {
   url: string;
@@ -83,15 +75,6 @@ export async function login({
   } catch (err) {
     return toLoginFailure(err);
   }
-}
-
-function createApi(url: string, deviceId: string, deviceName: string, accessToken?: string): Api {
-  const instanceParams = {
-    clientInfo: { name: "Tidepool", version: "0.1" },
-    deviceInfo: { id: deviceId, name: deviceName },
-  };
-  const jellyfin = new Jellyfin(instanceParams);
-  return jellyfin.createApi(url, accessToken);
 }
 
 export async function checkSession(
