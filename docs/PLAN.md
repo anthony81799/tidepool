@@ -185,4 +185,5 @@
 - Dev server: **Jellyfin 12.4.0** (image tag `12.4`). OpenAPI spec at `/api-docs/openapi.json`, Swagger UI at `/api-docs/swagger/index.html`.
 - Plugins for 12.x (checked 2026-11-08): Intro Skipper 12.0.6.0 (ABI 12.2) from `https://intro-skipper.org/manifest.json`, and OpenSubtitles 25 (ABI 12.0).
   - Use `http://127.0.0.1:8096`: `localhost` resolves to `::1` and the connection is reset (cause unconfirmed).
+- Server discovery: UDP broadcast on port 7359 isn't possible from a browser, so LAN discovery moves to Tauri (Phase 7). The web build can use the SDK's `jellyfin.discovery` (`getAddressCandidates`, `getRecommendedServerCandidates`, `findBestServer`) to complete a partly typed address (checked on SDK 1.0.2).
 - Open checks: Fire OS version on the Insignia F50 (7 or 8), CBR decoder choice, Open Subtitles account credentials on the dev server
