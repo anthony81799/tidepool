@@ -3,6 +3,7 @@ import type {
   UserItemDataDto,
   ChapterInfo,
   NameGuidPair,
+  BaseItemKind,
 } from "@jellyfin/sdk/lib/generated-client";
 
 type Season = {
@@ -101,6 +102,17 @@ export function toUserData(dto: UserItemDataDto): UserData {
 }
 const COMIC_FORMATS = ["cbz", "cbr"] as const;
 const BOOK_FORMATS = ["epub", "pdf", "mobi", "azw3", "fb2"] as const;
+export const MAPPED_ITEM_TYPES = [
+  "Movie",
+  "Series",
+  "Season",
+  "Episode",
+  "MusicArtist",
+  "MusicAlbum",
+  "Audio",
+  "AudioBook",
+  "Book",
+] satisfies readonly BaseItemKind[];
 
 function toSeconds(ticks: number | null | undefined): number | undefined {
   return ticks == null ? undefined : ticks / TICKS_PER_SECOND;
@@ -128,6 +140,7 @@ function extension(path: string | null | undefined): string {
 
 export function toItem(dto: BaseItemDto): Item | null {
   if (!dto.Id || !dto.Name || !dto.ServerId) return null;
+  if (dto.Type == null || !isOneOf(MAPPED_ITEM_TYPES, dto.Type)) return null;
 
   const base = {
     id: dto.Id,
