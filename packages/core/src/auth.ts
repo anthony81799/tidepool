@@ -1,4 +1,5 @@
 import { getAuthenticationApi } from "@jellyfin/sdk/lib/utils/api/authentication-api";
+import { getSessionApi } from "@jellyfin/sdk/lib/utils/api/session-api";
 import { getUserApi } from "@jellyfin/sdk/lib/utils/api/user-api";
 import type { AuthenticationResult } from "@jellyfin/sdk/lib/generated-client";
 import { isAxiosError } from "axios";
@@ -14,7 +15,12 @@ type LoginOptions = {
 
 export type LoginFailure = {
   ok: false;
-  reason: "invalid-credentials" | "unreachable" | "server-error" | "invalid-response";
+  reason:
+    | "invalid-credentials"
+    | "quick-connect-disabled"
+    | "unreachable"
+    | "server-error"
+    | "invalid-response";
 };
 
 export type LoginResult = { ok: true; session: Session } | LoginFailure;
@@ -91,7 +97,24 @@ export async function startQuickConnect({
     if (!data.Code || !data.Secret) return { ok: false, reason: "invalid-response" };
     return { ok: true, code: data.Code, secret: data.Secret };
   } catch (err) {
+    // Initiate returns 401 when Quick Connect is disabled on the server.
+    if (isAxiosError(err) && err.response?.status === 401) {
+      return { ok: false, reason: "quick-connect-disabled" };
+    }
     return toLoginFailure(err);
+  }
+}
+
+export async function logout(
+  session: Session,
+  deviceId: string,
+  deviceName: string,
+): Promise<void> {
+  const api = createApi(session.serverUrl, deviceId, deviceName, session.accessToken);
+  try {
+    await getSessionApi(api).reportSessionEnded();
+  } catch (err) {
+    if (!isAxiosError(err)) throw err;
   }
 }
 

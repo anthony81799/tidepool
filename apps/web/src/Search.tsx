@@ -1,13 +1,13 @@
 import {
   searchItems,
   groupByKind,
-  imageUrl,
   type ItemKind,
   type ItemsByKind,
   type Session,
 } from "@tidepool/core";
 import { useEffect, useState } from "react";
 import { DEVICE_NAME, getDeviceId } from "./device";
+import { PosterTile } from "./PosterTile";
 
 type Props = {
   session: Session;
@@ -88,23 +88,7 @@ export function Search({ session, onOpen }: Props) {
               <h2>{KIND_LABELS[kind]}</h2>
               <div className="poster-grid">
                 {items.map((item) => (
-                  <button key={item.id} onClick={() => onOpen(item.id)}>
-                    {item.primaryImageTag && (
-                      <img
-                        src={imageUrl(
-                          session,
-                          item.id,
-                          item.primaryImageTag,
-                          300,
-                          getDeviceId(),
-                          DEVICE_NAME,
-                        )}
-                        alt=""
-                        loading="lazy"
-                      />
-                    )}
-                    <span>{item.name}</span>
-                  </button>
+                  <PosterTile key={item.id} session={session} item={item} onOpen={onOpen} />
                 ))}
               </div>
             </section>

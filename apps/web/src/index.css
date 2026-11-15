@@ -4,9 +4,9 @@
   --bg: #fff;
   --border: #e5e4e7;
   --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
+  --accent: #b7410e;
+  --accent-bg: rgba(183, 65, 14, 0.1);
+  --accent-border: rgba(183, 65, 14, 0.5);
   --social-bg: rgba(244, 243, 236, 0.5);
   --shadow: rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
 
@@ -36,9 +36,9 @@
     --bg: #16171d;
     --border: #2e303a;
     --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
+    --accent: #e06a33;
+    --accent-bg: rgba(224, 106, 51, 0.15);
+    --accent-border: rgba(224, 106, 51, 0.5);
     --social-bg: rgba(47, 48, 58, 0.5);
     --shadow: rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
   }
@@ -87,6 +87,54 @@ h2 {
 }
 p {
   margin: 0;
+}
+
+button {
+  font: inherit;
+  color: var(--text-h);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 14px;
+  margin: 4px;
+  cursor: pointer;
+}
+button:hover,
+button:focus-visible {
+  border-color: var(--accent-border);
+  background: var(--accent-bg);
+}
+button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+input {
+  font: inherit;
+  color: var(--text-h);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 10px;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
+  width: min(360px, 100% - 32px);
+  margin: 32px auto;
+  text-align: left;
+}
+.login-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+[role="alert"] {
+  color: #d03a3a;
 }
 
 code {

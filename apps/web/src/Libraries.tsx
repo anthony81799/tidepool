@@ -1,7 +1,6 @@
 import {
   getLibraries,
   getLibraryItems,
-  imageUrl,
   type Item,
   type Library,
   type Session,
@@ -9,6 +8,7 @@ import {
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { DEVICE_NAME, getDeviceId } from "./device";
 import { ItemDetail } from "./ItemDetail";
+import { PosterTile } from "./PosterTile";
 import { Search } from "./Search";
 
 export function Libraries({ session }: { session: Session }) {
@@ -82,7 +82,8 @@ export function Libraries({ session }: { session: Session }) {
         />
       )}
       <div hidden={openItemId !== undefined}>
-        {failed && <p>Couldn't load</p>}
+        {failed && <p role="alert">Couldn't load</p>}
+        {!failed && (selected ? items : libraries) === null && <p>Loading</p>}
         <div hidden={selected !== null}>
           <Search session={session} onOpen={openFromList} />
         </div>
@@ -112,23 +113,7 @@ export function Libraries({ session }: { session: Session }) {
             </button>
             <div className="poster-grid">
               {items?.map((item) => (
-                <button key={item.id} onClick={() => openFromList(item.id)}>
-                  {item.primaryImageTag && (
-                    <img
-                      src={imageUrl(
-                        session,
-                        item.id,
-                        item.primaryImageTag,
-                        300,
-                        getDeviceId(),
-                        DEVICE_NAME,
-                      )}
-                      alt=""
-                      loading="lazy"
-                    />
-                  )}
-                  <span>{item.name}</span>
-                </button>
+                <PosterTile key={item.id} session={session} item={item} onOpen={openFromList} />
               ))}
             </div>
           </>

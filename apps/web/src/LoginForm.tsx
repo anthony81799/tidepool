@@ -9,6 +9,14 @@ import {
 } from "@tidepool/core";
 import { DEVICE_NAME, getDeviceId } from "./device";
 
+const FAILURE_MESSAGES: Record<LoginFailure["reason"], string> = {
+  "invalid-credentials": "Wrong username or password",
+  "quick-connect-disabled": "Quick Connect is turned off on this server",
+  unreachable: "Couldn't reach the server",
+  "server-error": "The server returned an error",
+  "invalid-response": "The server sent an unexpected response",
+};
+
 function field(form: FormData, name: string): string {
   const value = form.get(name);
   return typeof value === "string" ? value : "";
@@ -68,6 +76,7 @@ export function LoginForm({ onLogin }: { onLogin: (session: Session) => void }) 
   return (
     <>
       <form
+        className="login-form"
         onSubmit={async (event) => {
           event.preventDefault();
           const form = new FormData(event.currentTarget);
@@ -82,9 +91,18 @@ export function LoginForm({ onLogin }: { onLogin: (session: Session) => void }) 
           else setFailure(result);
         }}
       >
-        <input name="url" defaultValue="http://127.0.0.1:8096" />
-        <input name="username" />
-        <input name="password" type="password" />
+        <label>
+          Server
+          <input name="url" defaultValue="http://127.0.0.1:8096" />
+        </label>
+        <label>
+          Username
+          <input name="username" autoComplete="username" />
+        </label>
+        <label>
+          Password
+          <input name="password" type="password" autoComplete="current-password" />
+        </label>
         <button type="submit">Log in</button>
         <button
           type="button"
@@ -110,8 +128,8 @@ export function LoginForm({ onLogin }: { onLogin: (session: Session) => void }) 
         </button>
       </form>
       {quickConnect && <p>Enter this code in another Jellyfin app: {quickConnect.code}</p>}
-      {expired && <p>This code has expired</p>}
-      {failure && <p>{failure.reason}</p>}
+      {expired && <p role="alert">This code has expired</p>}
+      {failure && <p role="alert">{FAILURE_MESSAGES[failure.reason]}</p>}
     </>
   );
 }

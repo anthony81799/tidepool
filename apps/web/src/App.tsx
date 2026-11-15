@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import "./App.css";
 import { LoginForm } from "./LoginForm";
-import { checkSession } from "@tidepool/core";
+import { checkSession, logout } from "@tidepool/core";
 import {
   loadSessions,
   removeSession,
@@ -43,7 +43,14 @@ function App() {
       <p>
         Logged in as {active.userName} on {active.serverUrl}{" "}
         <button onClick={() => setStore({ ...store, active: null })}>Switch account</button>{" "}
-        <button onClick={() => setStore(removeSession(store, sessionKey(active)))}>Log Out</button>
+        <button
+          onClick={() => {
+            void logout(active, getDeviceId(), DEVICE_NAME);
+            setStore(removeSession(store, sessionKey(active)));
+          }}
+        >
+          Log Out
+        </button>
       </p>
       <Libraries key={sessionKey(active)} session={active} />
     </>
