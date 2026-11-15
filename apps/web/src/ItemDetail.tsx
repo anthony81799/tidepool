@@ -1,9 +1,29 @@
-import { getItem, imageUrl, type ItemResult, type Session } from "@tidepool/core";
+import {
+  getItem,
+  getItemChildren,
+  imageUrl,
+  type Item,
+  type ItemKind,
+  type ItemResult,
+  type ItemsResult,
+  type Session,
+} from "@tidepool/core";
 import { useEffect, useState } from "react";
 import { DEVICE_NAME, getDeviceId } from "./device";
 
-type Props = { session: Session; itemId: string; onBack: () => void };
+type Props = { session: Session; itemId: string; onBack: () => void; onOpen: (id: string) => void };
 type FailureReason = Extract<ItemResult, { ok: false }>["reason"];
+
+function childNumber(child: Item): number | undefined {
+  switch (child.kind) {
+    case "episode":
+      return child.episodeNumber;
+    case "track":
+      return child.trackNumber;
+    default:
+      return undefined;
+  }
+}
 
 const FAILURE_MESSAGES: Record<FailureReason, string> = {
   "not-found": "Item not found",
@@ -11,15 +31,23 @@ const FAILURE_MESSAGES: Record<FailureReason, string> = {
   failed: "Failed to load item",
 };
 
-export function ItemDetail({ session, itemId, onBack }: Props) {
+const PARENT_KINDS: ReadonlySet<ItemKind> = new Set(["series", "season", "album"]);
+
+export function ItemDetail({ session, itemId, onBack, onOpen }: Props) {
   const [result, setResult] = useState<ItemResult | null>(null);
+  const [children, setChildren] = useState<ItemsResult | null>(null);
 
   useEffect(() => {
     let ignore = false;
     async function fetchItem() {
-      const r = await getItem(session, itemId, getDeviceId(), DEVICE_NAME);
+      const itemResult = await getItem(session, itemId, getDeviceId(), DEVICE_NAME);
+      const childrenResult =
+        itemResult.ok && PARENT_KINDS.has(itemResult.item.kind)
+          ? await getItemChildren(session, itemResult.item.id, getDeviceId(), DEVICE_NAME)
+          : null;
       if (ignore) return;
-      setResult(r);
+      setResult(itemResult);
+      setChildren(childrenResult);
     }
     void fetchItem();
     return () => {
@@ -50,6 +78,21 @@ export function ItemDetail({ session, itemId, onBack }: Props) {
           <h1>{result.item.name}</h1>
           {result.item.year !== undefined && <p>{result.item.year}</p>}
           {result.item.overview && <p>{result.item.overview}</p>}
+          {children?.ok === false && <p>Couldn't load children</p>}
+          {children?.ok &&
+            children.items.map((child) => {
+              const childNum = childNumber(child);
+              return (
+                <button
+                  key={child.id}
+                  onClick={() => {
+                    onOpen(child.id);
+                  }}
+                >
+                  {childNum !== undefined ? `${childNum} ${child.name}` : child.name}
+                </button>
+              );
+            })}
         </>
       )}
     </>

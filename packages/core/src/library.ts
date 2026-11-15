@@ -15,7 +15,7 @@ export type Library = {
 
 export type LibrariesResult = { ok: true; libraries: Library[] } | { ok: false; reason: "failed" };
 
-export type LibraryItemsResult = { ok: true; items: Item[] } | { ok: false; reason: "failed" };
+export type ItemsResult = { ok: true; items: Item[] } | { ok: false; reason: "failed" };
 
 export type ItemResult =
   | { ok: true; item: Item }
@@ -74,7 +74,7 @@ export async function getLibraryItems(
   library: Library,
   deviceId: string,
   deviceName: string,
-): Promise<LibraryItemsResult> {
+): Promise<ItemsResult> {
   try {
     const data = (
       await getLibraryApi(
@@ -127,6 +127,29 @@ export async function getItem(
   } catch (err) {
     if (!isAxiosError(err)) throw err;
     if (err.response?.status === 404) return { ok: false, reason: "not-found" };
+    return { ok: false, reason: "failed" };
+  }
+}
+
+export async function getItemChildren(
+  session: Session,
+  parentId: string,
+  deviceId: string,
+  deviceName: string,
+): Promise<ItemsResult> {
+  try {
+    const data = (
+      await getLibraryApi(
+        createApi(session.serverUrl, deviceId, deviceName, session.accessToken),
+      ).getItems({
+        userId: session.userId,
+        parentId,
+        sortBy: ["ParentIndexNumber", "IndexNumber", "SortName"],
+      })
+    ).data;
+    return { ok: true, items: (data.Items ?? []).flatMap((dto) => toItem(dto) ?? []) };
+  } catch (err) {
+    if (!isAxiosError(err)) throw err;
     return { ok: false, reason: "failed" };
   }
 }

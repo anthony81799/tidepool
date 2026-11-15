@@ -1,9 +1,19 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["typescript", "oxc"],
+  "plugins": ["typescript", "oxc", "unicorn", "import"],
   "rules": {
     "curly": ["error", "multi-line", "consistent"],
-    "typescript/no-unnecessary-condition": "error"
+    "typescript/no-unnecessary-condition": "error",
+    "eslint/array-callback-return": "error",
+    "eslint/no-unused-expressions": ["error", { "enforceForJSX": true }],
+    "eslint/object-shorthand": "error",
+    "eslint/no-nested-ternary": "error",
+    "import/no-duplicates": "error",
+    "unicorn/consistent-function-scoping": "error",
+    "typescript/strict-boolean-expressions": [
+      "error",
+      { "allowNullableBoolean": true, "allowNullableString": true, "allowNullableObject": true }
+    ]
   },
   "overrides": [
     {

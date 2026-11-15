@@ -16,3 +16,6 @@ restore() {
 trap restore EXIT
 
 just fmt-check
+just lint
+pnpm -F web exec tsc -b
+pnpm -F @tidepool/core typecheck

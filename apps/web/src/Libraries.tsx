@@ -15,13 +15,17 @@ export function Libraries({ session }: { session: Session }) {
   const [selected, setSelected] = useState<Library | null>(null);
   const [items, setItems] = useState<Item[] | null>(null);
   const [failed, setFailed] = useState(false);
-  const [openItemId, setOpenItemId] = useState<string | null>(null);
+  const [openItemIds, setOpenItemIds] = useState<string[]>([]);
 
   const savedY = useRef(0);
 
   useLayoutEffect(() => {
-    if (!openItemId) window.scrollTo(0, savedY.current);
-  }, [openItemId]);
+    if (openItemIds.length === 0) {
+      window.scrollTo(0, savedY.current);
+    } else {
+      window.scrollTo(0, 0);
+    }
+  }, [openItemIds]);
 
   useEffect(() => {
     let ignore = false;
@@ -58,8 +62,17 @@ export function Libraries({ session }: { session: Session }) {
     };
   }, [session, selected]);
 
-  if (openItemId) {
-    return <ItemDetail session={session} itemId={openItemId} onBack={() => setOpenItemId(null)} />;
+  const openItemId = openItemIds.at(-1);
+  if (openItemId !== undefined) {
+    return (
+      <ItemDetail
+        session={session}
+        itemId={openItemId}
+        onBack={() => setOpenItemIds((ids) => ids.slice(0, -1))}
+        onOpen={(id) => setOpenItemIds((ids) => [...ids, id])}
+        key={openItemId}
+      />
+    );
   }
 
   return (
@@ -95,7 +108,7 @@ export function Libraries({ session }: { session: Session }) {
                 key={item.id}
                 onClick={() => {
                   savedY.current = window.scrollY;
-                  setOpenItemId(item.id);
+                  setOpenItemIds([item.id]);
                 }}
               >
                 {item.primaryImageTag && (
