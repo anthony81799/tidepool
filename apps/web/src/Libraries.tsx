@@ -9,6 +9,7 @@ import {
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { DEVICE_NAME, getDeviceId } from "./device";
 import { ItemDetail } from "./ItemDetail";
+import { Search } from "./Search";
 
 export function Libraries({ session }: { session: Session }) {
   const [libraries, setLibraries] = useState<Library[] | null>(null);
@@ -18,6 +19,11 @@ export function Libraries({ session }: { session: Session }) {
   const [openItemIds, setOpenItemIds] = useState<string[]>([]);
 
   const savedY = useRef(0);
+
+  function openFromList(id: string) {
+    savedY.current = window.scrollY;
+    setOpenItemIds([id]);
+  }
 
   useLayoutEffect(() => {
     if (openItemIds.length === 0) {
@@ -63,74 +69,71 @@ export function Libraries({ session }: { session: Session }) {
   }, [session, selected]);
 
   const openItemId = openItemIds.at(-1);
-  if (openItemId !== undefined) {
-    return (
-      <ItemDetail
-        session={session}
-        itemId={openItemId}
-        onBack={() => setOpenItemIds((ids) => ids.slice(0, -1))}
-        onOpen={(id) => setOpenItemIds((ids) => [...ids, id])}
-        key={openItemId}
-      />
-    );
-  }
 
   return (
     <>
-      {failed && <p>Couldn't load</p>}
-      {!selected &&
-        libraries?.map((library) => (
-          <button
-            key={library.id}
-            onClick={() => {
-              setFailed(false);
-              setItems(null);
-              setSelected(library);
-            }}
-          >
-            {library.name}
-          </button>
-        ))}
-      {selected && (
-        <>
-          <button
-            onClick={() => {
-              setFailed(false);
-              setSelected(null);
-              setItems(null);
-            }}
-          >
-            Back
-          </button>
-          <div className="poster-grid">
-            {items?.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => {
-                  savedY.current = window.scrollY;
-                  setOpenItemIds([item.id]);
-                }}
-              >
-                {item.primaryImageTag && (
-                  <img
-                    src={imageUrl(
-                      session,
-                      item.id,
-                      item.primaryImageTag,
-                      300,
-                      getDeviceId(),
-                      DEVICE_NAME,
-                    )}
-                    alt=""
-                    loading="lazy"
-                  />
-                )}
-                <span>{item.name}</span>
-              </button>
-            ))}
-          </div>
-        </>
+      {openItemId !== undefined && (
+        <ItemDetail
+          session={session}
+          itemId={openItemId}
+          onBack={() => setOpenItemIds((ids) => ids.slice(0, -1))}
+          onOpen={(id) => setOpenItemIds((ids) => [...ids, id])}
+          key={openItemId}
+        />
       )}
+      <div hidden={openItemId !== undefined}>
+        {failed && <p>Couldn't load</p>}
+        <div hidden={selected !== null}>
+          <Search session={session} onOpen={openFromList} />
+        </div>
+        {!selected &&
+          libraries?.map((library) => (
+            <button
+              key={library.id}
+              onClick={() => {
+                setFailed(false);
+                setItems(null);
+                setSelected(library);
+              }}
+            >
+              {library.name}
+            </button>
+          ))}
+        {selected && (
+          <>
+            <button
+              onClick={() => {
+                setFailed(false);
+                setSelected(null);
+                setItems(null);
+              }}
+            >
+              Back
+            </button>
+            <div className="poster-grid">
+              {items?.map((item) => (
+                <button key={item.id} onClick={() => openFromList(item.id)}>
+                  {item.primaryImageTag && (
+                    <img
+                      src={imageUrl(
+                        session,
+                        item.id,
+                        item.primaryImageTag,
+                        300,
+                        getDeviceId(),
+                        DEVICE_NAME,
+                      )}
+                      alt=""
+                      loading="lazy"
+                    />
+                  )}
+                  <span>{item.name}</span>
+                </button>
+              ))}
+            </div>
+          </>
+        )}
+      </div>
     </>
   );
 }
