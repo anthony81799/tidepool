@@ -6,14 +6,22 @@ import {
   type Library,
   type Session,
 } from "@tidepool/core";
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { DEVICE_NAME, getDeviceId } from "./device";
+import { ItemDetail } from "./ItemDetail";
 
 export function Libraries({ session }: { session: Session }) {
   const [libraries, setLibraries] = useState<Library[] | null>(null);
   const [selected, setSelected] = useState<Library | null>(null);
   const [items, setItems] = useState<Item[] | null>(null);
   const [failed, setFailed] = useState(false);
+  const [openItemId, setOpenItemId] = useState<string | null>(null);
+
+  const savedY = useRef(0);
+
+  useLayoutEffect(() => {
+    if (!openItemId) window.scrollTo(0, savedY.current);
+  }, [openItemId]);
 
   useEffect(() => {
     let ignore = false;
@@ -50,6 +58,10 @@ export function Libraries({ session }: { session: Session }) {
     };
   }, [session, selected]);
 
+  if (openItemId) {
+    return <ItemDetail session={session} itemId={openItemId} onBack={() => setOpenItemId(null)} />;
+  }
+
   return (
     <>
       {failed && <p>Couldn't load</p>}
@@ -79,7 +91,13 @@ export function Libraries({ session }: { session: Session }) {
           </button>
           <div className="poster-grid">
             {items?.map((item) => (
-              <div key={item.id}>
+              <button
+                key={item.id}
+                onClick={() => {
+                  savedY.current = window.scrollY;
+                  setOpenItemId(item.id);
+                }}
+              >
                 {item.primaryImageTag && (
                   <img
                     src={imageUrl(
@@ -94,8 +112,8 @@ export function Libraries({ session }: { session: Session }) {
                     loading="lazy"
                   />
                 )}
-                <p>{item.name}</p>
-              </div>
+                <span>{item.name}</span>
+              </button>
             ))}
           </div>
         </>
