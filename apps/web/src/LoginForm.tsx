@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useEffectEvent } from "react";
 import {
   login,
   startQuickConnect,
@@ -7,7 +7,12 @@ import {
   type LoginFailure,
   type Session,
 } from "@tidepool/core";
-import { getDeviceId } from "./device";
+import { DEVICE_NAME, getDeviceId } from "./device";
+
+function field(form: FormData, name: string): string {
+  const value = form.get(name);
+  return typeof value === "string" ? value : "";
+}
 
 export function LoginForm({ onLogin }: { onLogin: (session: Session) => void }) {
   const [failure, setFailure] = useState<LoginFailure | null>(null);
@@ -17,6 +22,7 @@ export function LoginForm({ onLogin }: { onLogin: (session: Session) => void }) 
     secret: string;
   } | null>(null);
   const [expired, setExpired] = useState(false);
+  const handleLogin = useEffectEvent((session: Session) => onLogin(session));
 
   useEffect(() => {
     let ignore = false;
@@ -27,20 +33,23 @@ export function LoginForm({ onLogin }: { onLogin: (session: Session) => void }) 
         url: quickConnect.url,
         secret: quickConnect.secret,
         deviceId: getDeviceId(),
-        deviceName: "Tidepool Web",
+        deviceName: DEVICE_NAME,
       });
       if (ignore) return;
-      if (status === "pending") timerId = setTimeout(poll, 3000);
-      else if (status === "approved") {
+      if (status === "pending") {
+        timerId = setTimeout(() => void poll(), 3000);
+      } else if (status === "approved") {
         const result = await completeQuickConnect({
           url: quickConnect.url,
           secret: quickConnect.secret,
           deviceId: getDeviceId(),
-          deviceName: "Tidepool Web",
+          deviceName: DEVICE_NAME,
         });
+        // oxlint-disable-next-line typescript/no-unnecessary-condition -- cleanup sets ignore during the await
         if (ignore) return;
-        if (result.ok) onLogin(result.session);
-        else {
+        if (result.ok) {
+          handleLogin(result.session);
+        } else {
           setFailure(result);
           setQuickConnect(null);
         }
@@ -49,12 +58,12 @@ export function LoginForm({ onLogin }: { onLogin: (session: Session) => void }) 
         setExpired(true);
       }
     }
-    timerId = setTimeout(poll, 3000);
+    timerId = setTimeout(() => void poll(), 3000);
     return () => {
       ignore = true;
       clearTimeout(timerId);
     };
-  }, [quickConnect, onLogin]);
+  }, [quickConnect]);
 
   return (
     <>
@@ -63,11 +72,11 @@ export function LoginForm({ onLogin }: { onLogin: (session: Session) => void }) 
           event.preventDefault();
           const form = new FormData(event.currentTarget);
           const result = await login({
-            url: String(form.get("url")),
-            username: String(form.get("username")),
-            password: String(form.get("password")),
+            url: field(form, "url"),
+            username: field(form, "username"),
+            password: field(form, "password"),
             deviceId: getDeviceId(),
-            deviceName: "Tidepool Web",
+            deviceName: DEVICE_NAME,
           });
           if (result.ok) onLogin(result.session);
           else setFailure(result);
@@ -82,17 +91,19 @@ export function LoginForm({ onLogin }: { onLogin: (session: Session) => void }) 
           onClick={async (event) => {
             if (!event.currentTarget.form) return;
             const form = new FormData(event.currentTarget.form);
-            const url = String(form.get("url"));
+            const url = field(form, "url");
             setExpired(false);
             setFailure(null);
             const result = await startQuickConnect({
               url,
               deviceId: getDeviceId(),
-              deviceName: "Tidepool Web",
+              deviceName: DEVICE_NAME,
             });
             if (result.ok) {
               setQuickConnect({ url, code: result.code, secret: result.secret });
-            } else setFailure(result);
+            } else {
+              setFailure(result);
+            }
           }}
         >
           Use Quick Connect

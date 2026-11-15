@@ -1,3 +1,5 @@
+export const DEVICE_NAME = "Tidepool Web";
+
 export function getDeviceId(): string {
   let deviceId = localStorage.getItem("tidepool.deviceId");
   if (!deviceId) {

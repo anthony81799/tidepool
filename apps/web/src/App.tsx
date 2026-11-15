@@ -10,64 +10,51 @@ import {
   upsertSession,
   type SavedSessions,
 } from "./session";
-import { getDeviceId } from "./device";
+import { DEVICE_NAME, getDeviceId } from "./device";
 import { Libraries } from "./Libraries";
 
 function App() {
   const [store, setStore] = useState<SavedSessions>(loadSessions);
   const active = store.sessions.find((s) => sessionKey(s) === store.active) ?? null;
 
-  function update(next: SavedSessions): void {
-    saveSessions(next);
-    setStore(next);
-  }
+  useEffect(() => {
+    saveSessions(store);
+  }, [store]);
 
   useEffect(() => {
     let ignore = false;
     async function verify() {
       if (!active) return;
-      const status = await checkSession(active, getDeviceId(), "Tidepool Web");
-      if (!ignore) {
-        if (status === "revoked") {
-          const key = sessionKey(active);
-          setStore((prev) => {
-            const next = removeSession(prev, key);
-            saveSessions(next);
-            return next;
-          });
-        }
+      const status = await checkSession(active, getDeviceId(), DEVICE_NAME);
+      if (ignore) return;
+      if (status === "revoked") {
+        const key = sessionKey(active);
+        setStore((prev) => removeSession(prev, key));
       }
     }
-    verify();
+    void verify();
     return () => {
       ignore = true;
     };
   }, [active]);
 
-  return (
+  return active ? (
     <>
-      {active && (
-        <>
-          <p>
-            Logged in as {active.userName} on {active.serverUrl}{" "}
-            <button onClick={() => update({ ...store, active: null })}>Switch account</button>{" "}
-            <button onClick={() => update(removeSession(store, sessionKey(active)))}>
-              Log Out
-            </button>
-          </p>
-          <Libraries key={sessionKey(active)} session={active} />
-        </>
-      )}
-      {!active && (
-        <>
-          {store.sessions.map((s) => (
-            <button key={sessionKey(s)} onClick={() => update({ ...store, active: sessionKey(s) })}>
-              {s.userName} @ {s.serverUrl}
-            </button>
-          ))}
-          <LoginForm onLogin={(s) => update(upsertSession(store, s))} />
-        </>
-      )}
+      <p>
+        Logged in as {active.userName} on {active.serverUrl}{" "}
+        <button onClick={() => setStore({ ...store, active: null })}>Switch account</button>{" "}
+        <button onClick={() => setStore(removeSession(store, sessionKey(active)))}>Log Out</button>
+      </p>
+      <Libraries key={sessionKey(active)} session={active} />
+    </>
+  ) : (
+    <>
+      {store.sessions.map((s) => (
+        <button key={sessionKey(s)} onClick={() => setStore({ ...store, active: sessionKey(s) })}>
+          {s.userName} @ {s.serverUrl}
+        </button>
+      ))}
+      <LoginForm onLogin={(s) => setStore(upsertSession(store, s))} />
     </>
   );
 }

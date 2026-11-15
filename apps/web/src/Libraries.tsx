@@ -7,26 +7,26 @@ import {
   type Session,
 } from "@tidepool/core";
 import { useEffect, useState } from "react";
-import { getDeviceId } from "./device";
+import { DEVICE_NAME, getDeviceId } from "./device";
 
 export function Libraries({ session }: { session: Session }) {
   const [libraries, setLibraries] = useState<Library[] | null>(null);
   const [selected, setSelected] = useState<Library | null>(null);
   const [items, setItems] = useState<Item[] | null>(null);
-  const [failed, setFailed] = useState<boolean>(false);
+  const [failed, setFailed] = useState(false);
 
   useEffect(() => {
     let ignore = false;
     async function fetchLibraries() {
-      const result = await getLibraries(session, getDeviceId(), "Tidepool Web");
+      const result = await getLibraries(session, getDeviceId(), DEVICE_NAME);
       if (ignore) return;
-      if (!result) {
+      if (!result.ok) {
         setFailed(true);
         return;
       }
-      setLibraries(result);
+      setLibraries(result.libraries);
     }
-    fetchLibraries();
+    void fetchLibraries();
     return () => {
       ignore = true;
     };
@@ -36,15 +36,15 @@ export function Libraries({ session }: { session: Session }) {
     let ignore = false;
     async function fetchItems() {
       if (!selected) return;
-      const result = await getLibraryItems(session, selected, getDeviceId(), "Tidepool Web");
+      const result = await getLibraryItems(session, selected, getDeviceId(), DEVICE_NAME);
       if (ignore) return;
-      if (!result) {
+      if (!result.ok) {
         setFailed(true);
         return;
       }
-      setItems(result);
+      setItems(result.items);
     }
-    fetchItems();
+    void fetchItems();
     return () => {
       ignore = true;
     };
@@ -54,8 +54,7 @@ export function Libraries({ session }: { session: Session }) {
     <>
       {failed && <p>Couldn't load</p>}
       {!selected &&
-        libraries &&
-        libraries.map((library) => (
+        libraries?.map((library) => (
           <button
             key={library.id}
             onClick={() => {
@@ -89,8 +88,9 @@ export function Libraries({ session }: { session: Session }) {
                       item.primaryImageTag,
                       300,
                       getDeviceId(),
-                      "Tidepool Web",
+                      DEVICE_NAME,
                     )}
+                    alt=""
                     loading="lazy"
                   />
                 )}

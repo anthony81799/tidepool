@@ -3,12 +3,15 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "lint": "oxlint",
+    "lint": "oxlint --type-aware",
+    "knip": "knip",
     "fmt": "oxfmt"
   },
   "devDependencies": {
+    "knip": "6.45.1",
     "oxfmt": "0.77.0",
-    "oxlint": "1.92.0"
+    "oxlint": "1.92.0",
+    "oxlint-tsgolint": "7.0.2005"
   },
   "devEngines": {
     "packageManager": {

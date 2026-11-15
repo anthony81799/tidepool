@@ -48,14 +48,10 @@ export function saveSessions(savedSessions: SavedSessions): void {
 
 export function upsertSession(store: SavedSessions, session: Session): SavedSessions {
   const key = sessionKey(session);
-  if (store.sessions.some((s) => sessionKey(s) === key)) {
-    const sessions = store.sessions.map((s) => {
-      if (sessionKey(s) === key) return session;
-      return s;
-    });
-    return { active: key, sessions };
-  }
-  return { active: key, sessions: [...store.sessions, session] };
+  const index = store.sessions.findIndex((s) => sessionKey(s) === key);
+  const sessions =
+    index === -1 ? [...store.sessions, session] : store.sessions.with(index, session);
+  return { active: key, sessions };
 }
 
 export function removeSession(store: SavedSessions, key: string): SavedSessions {

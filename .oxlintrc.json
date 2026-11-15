@@ -1,13 +1,19 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
   "plugins": ["typescript", "oxc"],
+  "rules": {
+    "curly": ["error", "multi-line", "consistent"],
+    "typescript/no-unnecessary-condition": "error"
+  },
   "overrides": [
     {
       "files": ["apps/web/**"],
-      "plugins": ["react"],
+      "plugins": ["react", "jsx-a11y"],
       "rules": {
         "react/rules-of-hooks": "error",
-        "react/only-export-components": ["warn", { "allowConstantExport": true }]
+        "react/only-export-components": ["warn", { "allowConstantExport": true }],
+        "react/self-closing-comp": "error",
+        "jsx-a11y/alt-text": "error"
       }
     }
   ]

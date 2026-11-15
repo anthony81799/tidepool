@@ -86,19 +86,19 @@ export type Item = {
 
 export type ItemKind = Item["kind"];
 
+const TICKS_PER_SECOND = 10_000_000;
+
 export function toUserData(dto: UserItemDataDto): UserData {
   return {
     played: dto.Played ?? false,
     favorite: dto.IsFavorite ?? false,
     playCount: dto.PlayCount ?? 0,
-    positionSeconds: (dto.PlaybackPositionTicks ?? 0) / 10_000_000,
+    positionSeconds: (dto.PlaybackPositionTicks ?? 0) / TICKS_PER_SECOND,
     playedPercentage: dto.PlayedPercentage ?? undefined,
     unplayedCount: dto.UnplayedItemCount ?? undefined,
     lastPlayed: dto.LastPlayedDate ? new Date(dto.LastPlayedDate) : undefined,
   };
 }
-
-const TICKS_PER_SECOND = 10_000_000;
 const COMIC_FORMATS = ["cbz", "cbr"] as const;
 const BOOK_FORMATS = ["epub", "pdf", "mobi", "azw3", "fb2"] as const;
 

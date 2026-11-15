@@ -13,6 +13,14 @@ export type Library = {
   primaryImageTag?: string | undefined;
 };
 
+export type LibrariesResult = { ok: true; libraries: Library[] } | { ok: false; reason: "failed" };
+
+export type LibraryItemsResult = { ok: true; items: Item[] } | { ok: false; reason: "failed" };
+
+export type ItemResult =
+  | { ok: true; item: Item }
+  | { ok: false; reason: "not-found" | "unsupported" | "failed" };
+
 const LIBRARY_ITEM_TYPES: Record<Library["type"], BaseItemKind[]> = {
   movies: ["Movie"],
   tvshows: ["Series"],
@@ -47,17 +55,17 @@ export async function getLibraries(
   session: Session,
   deviceId: string,
   deviceName: string,
-): Promise<Library[] | null> {
+): Promise<LibrariesResult> {
   try {
     const data = (
       await getUserViewApi(
         createApi(session.serverUrl, deviceId, deviceName, session.accessToken),
       ).getUserViews({ userId: session.userId })
     ).data;
-    return (data.Items ?? []).flatMap((dto) => toLibrary(dto) ?? []);
+    return { ok: true, libraries: (data.Items ?? []).flatMap((dto) => toLibrary(dto) ?? []) };
   } catch (err) {
     if (!isAxiosError(err)) throw err;
-    return null;
+    return { ok: false, reason: "failed" };
   }
 }
 
@@ -66,7 +74,7 @@ export async function getLibraryItems(
   library: Library,
   deviceId: string,
   deviceName: string,
-): Promise<Item[] | null> {
+): Promise<LibraryItemsResult> {
   try {
     const data = (
       await getLibraryApi(
@@ -80,10 +88,10 @@ export async function getLibraryItems(
         fields: ["Path", "Chapters", "Overview"],
       })
     ).data;
-    return (data.Items ?? []).flatMap((dto) => toItem(dto) ?? []);
+    return { ok: true, items: (data.Items ?? []).flatMap((dto) => toItem(dto) ?? []) };
   } catch (err) {
     if (!isAxiosError(err)) throw err;
-    return null;
+    return { ok: false, reason: "failed" };
   }
 }
 
@@ -100,4 +108,25 @@ export function imageUrl(
     "Primary",
     { tag, fillHeight: height },
   );
+}
+
+export async function getItem(
+  session: Session,
+  itemId: string,
+  deviceId: string,
+  deviceName: string,
+): Promise<ItemResult> {
+  try {
+    const data = (
+      await getLibraryApi(
+        createApi(session.serverUrl, deviceId, deviceName, session.accessToken),
+      ).getItem({ itemId, userId: session.userId })
+    ).data;
+    const item = toItem(data);
+    return item ? { ok: true, item } : { ok: false, reason: "unsupported" };
+  } catch (err) {
+    if (!isAxiosError(err)) throw err;
+    if (err.response?.status === 404) return { ok: false, reason: "not-found" };
+    return { ok: false, reason: "failed" };
+  }
 }
