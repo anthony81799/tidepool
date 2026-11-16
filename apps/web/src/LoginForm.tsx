@@ -4,6 +4,7 @@ import {
   startQuickConnect,
   checkQuickConnect,
   completeQuickConnect,
+  findServer,
   type LoginFailure,
   type Session,
 } from "@tidepool/core";
@@ -79,9 +80,20 @@ export function LoginForm({ onLogin }: { onLogin: (session: Session) => void }) 
         className="login-form"
         onSubmit={async (event) => {
           event.preventDefault();
+          setExpired(false);
+          setFailure(null);
           const form = new FormData(event.currentTarget);
-          const result = await login({
+          const server = await findServer({
             url: field(form, "url"),
+            deviceId: getDeviceId(),
+            deviceName: DEVICE_NAME,
+          });
+          if (!server.ok) {
+            setFailure(server);
+            return;
+          }
+          const result = await login({
+            url: server.url,
             username: field(form, "username"),
             password: field(form, "password"),
             deviceId: getDeviceId(),
@@ -108,17 +120,25 @@ export function LoginForm({ onLogin }: { onLogin: (session: Session) => void }) 
           type="button"
           onClick={async (event) => {
             if (!event.currentTarget.form) return;
-            const form = new FormData(event.currentTarget.form);
-            const url = field(form, "url");
             setExpired(false);
             setFailure(null);
+            const form = new FormData(event.currentTarget.form);
+            const server = await findServer({
+              url: field(form, "url"),
+              deviceId: getDeviceId(),
+              deviceName: DEVICE_NAME,
+            });
+            if (!server.ok) {
+              setFailure(server);
+              return;
+            }
             const result = await startQuickConnect({
-              url,
+              url: server.url,
               deviceId: getDeviceId(),
               deviceName: DEVICE_NAME,
             });
             if (result.ok) {
-              setQuickConnect({ url, code: result.code, secret: result.secret });
+              setQuickConnect({ url: server.url, code: result.code, secret: result.secret });
             } else {
               setFailure(result);
             }

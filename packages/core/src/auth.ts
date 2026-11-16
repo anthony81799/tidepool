@@ -3,7 +3,7 @@ import { getSessionApi } from "@jellyfin/sdk/lib/utils/api/session-api";
 import { getUserApi } from "@jellyfin/sdk/lib/utils/api/user-api";
 import type { AuthenticationResult } from "@jellyfin/sdk/lib/generated-client";
 import { isAxiosError } from "axios";
-import { createApi, type Session, type SessionStatus } from "./api";
+import { createApi, createJellyfin, type Session, type SessionStatus } from "./api";
 
 type LoginOptions = {
   url: string;
@@ -24,6 +24,8 @@ export type LoginFailure = {
 };
 
 export type LoginResult = { ok: true; session: Session } | LoginFailure;
+
+export type ServerResult = { ok: true; url: string } | LoginFailure;
 
 type ServerOptions = Omit<LoginOptions, "username" | "password">;
 
@@ -151,4 +153,14 @@ export async function completeQuickConnect({
   } catch (err) {
     return toLoginFailure(err);
   }
+}
+
+export async function findServer({
+  url,
+  deviceId,
+  deviceName,
+}: ServerOptions): Promise<ServerResult> {
+  const { discovery } = createJellyfin(deviceId, deviceName);
+  const best = discovery.findBestServer(await discovery.getRecommendedServerCandidates(url));
+  return best ? { ok: true, url: best.address } : { ok: false, reason: "unreachable" };
 }

@@ -10,16 +10,20 @@ export type Session = {
 
 export type SessionStatus = "valid" | "revoked" | "unknown";
 
+export function createJellyfin(deviceId: string, deviceName: string): Jellyfin {
+  const instanceParams = {
+    clientInfo: { name: "Tidepool", version: "0.1" },
+    deviceInfo: { id: deviceId, name: deviceName },
+  };
+  return new Jellyfin(instanceParams);
+}
+
 export function createApi(
   url: string,
   deviceId: string,
   deviceName: string,
   accessToken?: string,
 ): Api {
-  const instanceParams = {
-    clientInfo: { name: "Tidepool", version: "0.1" },
-    deviceInfo: { id: deviceId, name: deviceName },
-  };
-  const jellyfin = new Jellyfin(instanceParams);
+  const jellyfin = createJellyfin(deviceId, deviceName);
   return jellyfin.createApi(url, accessToken);
 }
