@@ -63,6 +63,8 @@ export type UserData = {
   lastPlayed?: Date | undefined;
 };
 
+export type ImageRef = { itemId: string; tag: string };
+
 export type Item = {
   id: string;
   serverId: string;
@@ -72,6 +74,7 @@ export type Item = {
   runtimeSeconds?: number | undefined;
   primaryImageTag?: string | undefined;
   userData?: UserData | undefined;
+  backdrop?: ImageRef | undefined;
 } & (
   | { kind: "movie" }
   | { kind: "series" }
@@ -100,8 +103,11 @@ export function toUserData(dto: UserItemDataDto): UserData {
     lastPlayed: dto.LastPlayedDate ? new Date(dto.LastPlayedDate) : undefined,
   };
 }
+
 const COMIC_FORMATS = ["cbz", "cbr"] as const;
+
 const BOOK_FORMATS = ["epub", "pdf", "mobi", "azw3", "fb2"] as const;
+
 export const MAPPED_ITEM_TYPES = [
   "Movie",
   "Series",
@@ -138,6 +144,15 @@ function extension(path: string | null | undefined): string {
   return path && dot !== -1 ? path.slice(dot + 1).toLowerCase() : "";
 }
 
+function toBackdrop(dto: BaseItemDto): ImageRef | undefined {
+  const ownTag = dto.BackdropImageTags?.[0];
+  if (dto.Id && ownTag) return { itemId: dto.Id, tag: ownTag };
+  const parentTag = dto.ParentBackdropImageTags?.[0];
+  return dto.ParentBackdropItemId && parentTag
+    ? { itemId: dto.ParentBackdropItemId, tag: parentTag }
+    : undefined;
+}
+
 export function toItem(dto: BaseItemDto): Item | null {
   if (!dto.Id || !dto.Name || !dto.ServerId) return null;
   if (dto.Type == null || !isOneOf(MAPPED_ITEM_TYPES, dto.Type)) return null;
@@ -151,6 +166,7 @@ export function toItem(dto: BaseItemDto): Item | null {
     runtimeSeconds: toSeconds(dto.RunTimeTicks),
     primaryImageTag: dto.ImageTags?.["Primary"] ?? undefined,
     userData: dto.UserData ? toUserData(dto.UserData) : undefined,
+    backdrop: toBackdrop(dto),
   };
 
   switch (dto.Type) {

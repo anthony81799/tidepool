@@ -21,6 +21,8 @@ export type ItemResult =
   | { ok: true; item: Item }
   | { ok: false; reason: "not-found" | "unsupported" | "failed" };
 
+export type ImageType = "Primary" | "Backdrop";
+
 const LIBRARY_ITEM_TYPES: Record<Library["type"], BaseItemKind[]> = {
   movies: ["Movie"],
   tvshows: ["Series"],
@@ -102,10 +104,11 @@ export function imageUrl(
   height: number,
   deviceId: string,
   deviceName: string,
+  type: ImageType = "Primary",
 ): string {
   return getImageApi(createApi(session.serverUrl, deviceId, deviceName)).getItemImageUrlById(
     itemId,
-    "Primary",
+    type,
     { tag, fillHeight: height },
   );
 }

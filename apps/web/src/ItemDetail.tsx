@@ -62,6 +62,21 @@ export function ItemDetail({ session, itemId, onBack, onOpen }: Props) {
       {result && !result.ok && <p>{FAILURE_MESSAGES[result.reason]}</p>}
       {result?.ok && (
         <>
+          {result.item.backdrop && (
+            <img
+              src={imageUrl(
+                session,
+                result.item.backdrop.itemId,
+                result.item.backdrop.tag,
+                720,
+                getDeviceId(),
+                DEVICE_NAME,
+                "Backdrop",
+              )}
+              alt=""
+              className="item-backdrop"
+            />
+          )}
           {result.item.primaryImageTag && (
             <img
               src={imageUrl(
@@ -73,6 +88,7 @@ export function ItemDetail({ session, itemId, onBack, onOpen }: Props) {
                 DEVICE_NAME,
               )}
               alt=""
+              className="item-poster"
             />
           )}
           <h1>{result.item.name}</h1>
