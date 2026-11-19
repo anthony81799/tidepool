@@ -1,17 +1,21 @@
 import {
   getLibraries,
   getLibraryItems,
+  imageUrl,
   type Item,
   type Library,
   type Session,
 } from "@tidepool/core";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { DEVICE_NAME, getDeviceId } from "./device";
+import { HomeIcon, LibraryIcon, Mark } from "./Icons";
 import { ItemDetail } from "./ItemDetail";
-import { PosterTile } from "./PosterTile";
+import { PosterGridSkeleton, PosterTile } from "./PosterTile";
 import { Search } from "./Search";
 
-export function Libraries({ session }: { session: Session }) {
+type Props = { session: Session; account: ReactNode };
+
+export function Libraries({ session, account }: Props) {
   const [libraries, setLibraries] = useState<Library[] | null>(null);
   const [selected, setSelected] = useState<Library | null>(null);
   const [items, setItems] = useState<Item[] | null>(null);
@@ -23,6 +27,14 @@ export function Libraries({ session }: { session: Session }) {
   function openFromList(id: string) {
     savedY.current = window.scrollY;
     setOpenItemIds([id]);
+  }
+
+  function select(library: Library | null) {
+    setFailed(false);
+    setItems(null);
+    setOpenItemIds([]);
+    savedY.current = 0;
+    setSelected(library);
   }
 
   useLayoutEffect(() => {
@@ -71,54 +83,119 @@ export function Libraries({ session }: { session: Session }) {
   const openItemId = openItemIds.at(-1);
 
   return (
-    <>
-      {openItemId !== undefined && (
-        <ItemDetail
-          session={session}
-          itemId={openItemId}
-          onBack={() => setOpenItemIds((ids) => ids.slice(0, -1))}
-          onOpen={(id) => setOpenItemIds((ids) => [...ids, id])}
-          key={openItemId}
-        />
-      )}
-      <div hidden={openItemId !== undefined}>
-        {failed && <p role="alert">Couldn't load</p>}
-        {!failed && (selected ? items : libraries) === null && <p>Loading</p>}
-        <div hidden={selected !== null}>
-          <Search session={session} onOpen={openFromList} />
+    <div className="shell">
+      <nav className="rail" aria-label="Libraries">
+        <div className="brand">
+          <Mark />
+          <span>Tidepool</span>
         </div>
-        {!selected &&
-          libraries?.map((library) => (
+        <ul className="rail-links">
+          <li>
             <button
-              key={library.id}
-              onClick={() => {
-                setFailed(false);
-                setItems(null);
-                setSelected(library);
-              }}
+              className="rail-link"
+              aria-current={selected === null ? "page" : undefined}
+              onClick={() => select(null)}
             >
-              {library.name}
+              <HomeIcon />
+              Home
             </button>
+          </li>
+          {libraries?.map((library) => (
+            <li key={library.id}>
+              <button
+                className="rail-link"
+                aria-current={selected?.id === library.id ? "page" : undefined}
+                onClick={() => select(library)}
+              >
+                <LibraryIcon type={library.type} />
+                {library.name}
+              </button>
+            </li>
           ))}
-        {selected && (
-          <>
-            <button
-              onClick={() => {
-                setFailed(false);
-                setSelected(null);
-                setItems(null);
-              }}
-            >
-              Back
-            </button>
-            <div className="poster-grid">
-              {items?.map((item) => (
-                <PosterTile key={item.id} session={session} item={item} onOpen={openFromList} />
-              ))}
-            </div>
-          </>
+        </ul>
+        <div className="rail-account">{account}</div>
+      </nav>
+      <main className="stage">
+        {openItemId !== undefined && (
+          <ItemDetail
+            session={session}
+            itemId={openItemId}
+            onBack={() => setOpenItemIds((ids) => ids.slice(0, -1))}
+            onOpen={(id) => setOpenItemIds((ids) => [...ids, id])}
+            key={openItemId}
+          />
         )}
-      </div>
-    </>
+        <div className="page" hidden={openItemId !== undefined}>
+          {failed && (
+            <p role="alert" className="notice">
+              Couldn't load this library. Check that the server is running, then pick it again.
+            </p>
+          )}
+          <div hidden={selected !== null}>
+            <Search
+              session={session}
+              onOpen={openFromList}
+              idle={
+                libraries &&
+                libraries.length > 0 && (
+                  <section className="home-libraries">
+                    <h2 className="section-title">Libraries</h2>
+                    <div className="library-grid">
+                      {libraries.map((library) => (
+                        <button
+                          key={library.id}
+                          className="library-tile"
+                          aria-label={library.name}
+                          onClick={() => select(library)}
+                        >
+                          {library.primaryImageTag ? (
+                            <img
+                              src={imageUrl(
+                                session,
+                                library.id,
+                                library.primaryImageTag,
+                                360,
+                                getDeviceId(),
+                                DEVICE_NAME,
+                              )}
+                              alt=""
+                              loading="lazy"
+                            />
+                          ) : (
+                            <span className="library-tile-name">
+                              <LibraryIcon type={library.type} />
+                              {library.name}
+                            </span>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  </section>
+                )
+              }
+            />
+          </div>
+          {selected && (
+            <section>
+              <header className="page-header">
+                <h1 className="page-title">{selected.name}</h1>
+                {items && (
+                  <p className="page-meta">
+                    {items.length} {items.length === 1 ? "title" : "titles"}
+                  </p>
+                )}
+              </header>
+              {!failed && items === null && <PosterGridSkeleton />}
+              {items?.length === 0 && <p className="empty">This library is empty.</p>}
+              <div className="poster-grid">
+                {items?.map((item) => (
+                  <PosterTile key={item.id} session={session} item={item} onOpen={openFromList} />
+                ))}
+              </div>
+            </section>
+          )}
+        </div>
+      </main>
+    </div>
   );
 }

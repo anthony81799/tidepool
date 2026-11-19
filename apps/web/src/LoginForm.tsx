@@ -103,21 +103,24 @@ export function LoginForm({ onLogin }: { onLogin: (session: Session) => void }) 
           else setFailure(result);
         }}
       >
-        <label>
+        <label className="field">
           Server
           <input name="url" defaultValue="http://127.0.0.1:8096" />
         </label>
-        <label>
+        <label className="field">
           Username
           <input name="username" autoComplete="username" />
         </label>
-        <label>
+        <label className="field">
           Password
           <input name="password" type="password" autoComplete="current-password" />
         </label>
-        <button type="submit">Log in</button>
+        <button type="submit" className="button-primary">
+          Log in
+        </button>
         <button
           type="button"
+          className="button-ghost"
           onClick={async (event) => {
             if (!event.currentTarget.form) return;
             setExpired(false);
@@ -147,9 +150,22 @@ export function LoginForm({ onLogin }: { onLogin: (session: Session) => void }) 
           Use Quick Connect
         </button>
       </form>
-      {quickConnect && <p>Enter this code in another Jellyfin app: {quickConnect.code}</p>}
-      {expired && <p role="alert">This code has expired</p>}
-      {failure && <p role="alert">{FAILURE_MESSAGES[failure.reason]}</p>}
+      {quickConnect && (
+        <div className="quick-connect" aria-live="polite">
+          <p>Enter this code in another Jellyfin app that's signed in:</p>
+          <p className="quick-connect-code">{quickConnect.code}</p>
+        </div>
+      )}
+      {expired && (
+        <p role="alert" className="notice">
+          This code has expired. Choose Use Quick Connect to get a new one.
+        </p>
+      )}
+      {failure && (
+        <p role="alert" className="notice">
+          {FAILURE_MESSAGES[failure.reason]}
+        </p>
+      )}
     </>
   );
 }

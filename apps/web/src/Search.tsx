@@ -5,13 +5,15 @@ import {
   type ItemsByKind,
   type Session,
 } from "@tidepool/core";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { DEVICE_NAME, getDeviceId } from "./device";
+import { SearchIcon } from "./Icons";
 import { PosterTile } from "./PosterTile";
 
 type Props = {
   session: Session;
   onOpen: (id: string) => void;
+  idle?: ReactNode;
 };
 
 const KIND_ORDER = [
@@ -40,7 +42,7 @@ const KIND_LABELS = {
   comic: "Comics",
 } satisfies Record<ItemKind, string>;
 
-export function Search({ session, onOpen }: Props) {
+export function Search({ session, onOpen, idle }: Props) {
   const [groups, setGroups] = useState<ItemsByKind | null>(null);
   const [failed, setFailed] = useState(false);
   const [term, setTerm] = useState("");
@@ -67,25 +69,39 @@ export function Search({ session, onOpen }: Props) {
     };
   }, [session, term]);
 
+  const hasTerm = term.trim().length !== 0;
+
   return (
-    <search>
-      <input
-        type="search"
-        aria-label="Search"
-        value={term}
-        onChange={(e) => setTerm(e.target.value)}
-      />
-      {failed && <p role="alert">Search failed</p>}
-      {term.trim().length !== 0 && groups !== null && Object.keys(groups).length === 0 && (
-        <p>No results</p>
+    <search className="search">
+      <label className="search-field">
+        <SearchIcon size={22} />
+        <input
+          type="search"
+          aria-label="Search"
+          placeholder="Search movies, shows, music and books"
+          value={term}
+          onChange={(e) => setTerm(e.target.value)}
+        />
+      </label>
+      {failed && (
+        <p role="alert" className="notice">
+          Search didn't reach the server. Check your connection and try again.
+        </p>
+      )}
+      {!hasTerm && idle}
+      {hasTerm && groups !== null && Object.keys(groups).length === 0 && (
+        <p className="empty">Nothing matches “{term.trim()}”.</p>
       )}
       {groups &&
         KIND_ORDER.map((kind) => {
           const items = groups[kind];
           if (!items) return null;
           return (
-            <section key={kind}>
-              <h2>{KIND_LABELS[kind]}</h2>
+            <section key={kind} className="result-group">
+              <h2 className="section-title">
+                {KIND_LABELS[kind]}
+                <span className="count">{items.length}</span>
+              </h2>
               <div className="poster-grid">
                 {items.map((item) => (
                   <PosterTile key={item.id} session={session} item={item} onOpen={onOpen} />
