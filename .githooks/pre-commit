@@ -1,17 +1,38 @@
 #!/bin/sh
 set -e
 
-PRESTASH_REF=$(git rev-parse -q --verify refs/stash) || true
-# Stash unstaged changes (keeps staged changes in the working tree)
-git stash push -q --keep-index --include-untracked
-POSTSTASH_REF=$(git rev-parse -q --verify refs/stash) || true
+# Hide unstaged and untracked changes without ever rewriting files back to HEAD (a reset makes Vite serve stale code).
+BACKUP="$(git rev-parse --git-dir)/pre-commit-backup"
+if [ -e "$BACKUP" ]; then
+    echo "pre-commit: $BACKUP exists from an interrupted run; restore or delete it first." >&2
+    exit 1
+fi
+
+UNTRACKED=$(git ls-files --others --exclude-standard)
+if git diff --quiet && [ -z "$UNTRACKED" ]; then
+    HIDDEN=0
+else
+    HIDDEN=1
+    mkdir "$BACKUP"
+    git diff --binary >"$BACKUP/unstaged.patch"
+    git ls-files --others --exclude-standard -z >"$BACKUP/untracked.list"
+    if [ -s "$BACKUP/untracked.list" ]; then
+        tar --null -T "$BACKUP/untracked.list" -cf "$BACKUP/untracked.tar"
+        xargs -0 rm -f <"$BACKUP/untracked.list"
+    fi
+    git checkout -- .
+fi
 
 restore() {
-    # Restore unstaged changes only if we actually stashed something
-    if [ "$PRESTASH_REF" != "$POSTSTASH_REF" ]; then
-        git reset --hard -q
-        git stash pop --quiet --index
+    [ "$HIDDEN" = 1 ] || return 0
+    if [ -s "$BACKUP/untracked.list" ]; then
+        tar -xf "$BACKUP/untracked.tar"
     fi
+    if [ -s "$BACKUP/unstaged.patch" ] && ! git apply --whitespace=nowarn "$BACKUP/unstaged.patch"; then
+        echo "pre-commit: couldn't reapply unstaged changes; they are saved in $BACKUP" >&2
+        return 1
+    fi
+    rm -rf "$BACKUP"
 }
 trap restore EXIT
 
